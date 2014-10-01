@@ -1,0 +1,27 @@
+17:04:02 **** Build of project build ****
+/usr/bin/make -j4 all 
+/usr/bin/cmake -H/home/simon/ROS_WS/src -B/home/simon/ROS_WS/build --check-build-system CMakeFiles/Makefile.cmake 0
+/usr/bin/cmake -E cmake_progress_start /home/simon/ROS_WS/build/CMakeFiles /home/simon/ROS_WS/build/CMakeFiles/progress.marks
+/usr/bin/make -f CMakeFiles/Makefile2 all
+make[1]: Entering directory `/home/simon/ROS_WS/build'
+/usr/bin/make -f t_pkg/CMakeFiles/t_pkg_node.dir/build.make t_pkg/CMakeFiles/t_pkg_node.dir/depend
+make[2]: Entering directory `/home/simon/ROS_WS/build'
+cd /home/simon/ROS_WS/build && /usr/bin/cmake -E cmake_depends "Unix Makefiles" /home/simon/ROS_WS/src /home/simon/ROS_WS/src/t_pkg /home/simon/ROS_WS/build /home/simon/ROS_WS/build/t_pkg /home/simon/ROS_WS/build/t_pkg/CMakeFiles/t_pkg_node.dir/DependInfo.cmake --color=
+Scanning dependencies of target t_pkg_node
+make[2]: Leaving directory `/home/simon/ROS_WS/build'
+/usr/bin/make -f t_pkg/CMakeFiles/t_pkg_node.dir/build.make t_pkg/CMakeFiles/t_pkg_node.dir/build
+make[2]: Entering directory `/home/simon/ROS_WS/build'
+/usr/bin/cmake -E cmake_progress_report /home/simon/ROS_WS/build/CMakeFiles 4
+[100%] Building CXX object t_pkg/CMakeFiles/t_pkg_node.dir/src/test.cpp.o
+cd /home/simon/ROS_WS/build/t_pkg && /usr/bin/c++   -DROS_BUILD_SHARED_LIBS=1 -DROS_PACKAGE_NAME=\"t_pkg\" -DROSCONSOLE_BACKEND_LOG4CXX -I/opt/ros/hydro/include    -o CMakeFiles/t_pkg_node.dir/src/test.cpp.o -c /home/simon/ROS_WS/src/t_pkg/src/test.cpp
+Linking CXX executable /home/simon/ROS_WS/devel/lib/t_pkg/t_pkg_node
+cd /home/simon/ROS_WS/build/t_pkg && /usr/bin/cmake -E cmake_link_script CMakeFiles/t_pkg_node.dir/link.txt --verbose=1
+/usr/bin/c++       CMakeFiles/t_pkg_node.dir/src/test.cpp.o  -o /home/simon/ROS_WS/devel/lib/t_pkg/t_pkg_node -rdynamic 
+make[2]: Leaving directory `/home/simon/ROS_WS/build'
+/usr/bin/cmake -E cmake_progress_report /home/simon/ROS_WS/build/CMakeFiles  4
+[100%] Built target t_pkg_node
+make[1]: Leaving directory `/home/simon/ROS_WS/build'
+/usr/bin/cmake -E cmake_progress_start /home/simon/ROS_WS/build/CMakeFiles 0
+
+17:04:02 Build Finished (took 828ms)
+
