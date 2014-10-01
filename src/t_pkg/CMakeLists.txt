@@ -102,16 +102,18 @@ include_directories(
 # )
 
 ## Declare a cpp executable
- add_executable(t_pkg_node src/test.cpp)
+ add_executable(talker src/test.cpp)
+ add_executable(listener src/test_listener.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(t_pkg_node t_pkg_generate_messages_cpp)
+ add_dependencies(talker t_pkg_generate_messages_cpp)
+ add_dependencies(listener t_pkg_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(t_pkg_node
-#   ${catkin_LIBRARIES}
-# )
+ target_link_libraries(talker ${catkin_LIBRARIES} )
+ target_link_libraries(listener ${catkin_LIBRARIES} )
+
 
 #############
 ## Install ##
