@@ -4,6 +4,7 @@
 #include "std_msgs/String.h"
 
 #include <sstream>
+
 int main(int argc, char **argv)
 {
   ros::init(argc, argv, "talker");
@@ -19,7 +20,7 @@ int main(int argc, char **argv)
     std_msgs::String msg;
 
     std::stringstream ss;
-    ss << "I run in 2Hz and I like to publish stuff. Count is:" << count;
+    ss << "I run in 2Hz and I like to publish stuff. Paulo aswell! Count is:" << count;
     msg.data = ss.str();
 
     ROS_INFO("%s", msg.data.c_str());
