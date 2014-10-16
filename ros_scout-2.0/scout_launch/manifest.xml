@@ -1,0 +1,13 @@
+<package>
+  <description brief="scout_launch">
+
+     Launch files for Scout platform
+
+  </description>
+  <author>Rodrigo Ventura</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+
+</package>
+
+

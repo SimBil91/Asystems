@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+
+<launch>
+	
+	<arg name="odometry_frame_id" default="odom" />
+	<arg name="base_frame_id" default="base_link" />
+	<arg name="laser_frame_id" default="laser_frame" />
+	
+	
+	<!-- For debug purpose -->
+	<!--node pkg="scout_odometry" name="virtual_ticks" type="virtual_ticks" required="true" output="screen">			
+	</node--> 
+		    
+	<node pkg="scout_odometry" name="odometry_node" type="odometry_node" required="true" output="screen">
+		<param name="L" value="0.34054732" type="double" />             <!-- length of wheel axles -->
+		<param name="LAMBDA_L" value="-76113.3333333" type="double" />  <!-- encoders/m of the left wheel-->
+		<param name="LAMBDA_R" value="75971.50000" type="double" />     <!-- encoders/m of the right wheel-->
+		
+		<param name="odometry_frame_id" value="$(arg odometry_frame_id)" />
+		<param name="base_frame_id" value="$(arg base_frame_id)" />
+		
+		<remap from="motors" to="/scout/motors" />
+		<remap from="odometry" to="/odom" />
+		
+		<param name="debug" value="false" type="bool" />
+	</node>
+	
+</launch>

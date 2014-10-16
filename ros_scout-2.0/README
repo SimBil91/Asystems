@@ -1,0 +1,77 @@
+
+ROS drivers for the ISR customized Nomadic Scout platform
+=========================================================
+
+Author: Rodrigo Ventura <rodrigo.ventura@isr.ist.utl.pt>
+        Institute for Systems and Robotics
+        Instituto Superior Tecnico
+        ULisbon, Portugal
+
+Changelog:
+  * 13-Set-2013: version 1.0 release, based on the onboard motherboard
+  * 10-Set-2014: version 2.0 release, standalone version;
+                 re-structured packages and added a README file
+
+1. INTRODUCTION
+
+This folder contains five packages for ROS, as rosbuild packages, that
+provide a standard interface for the Nomadic Scout robot, costumized
+by IDMind. It assumes that the computer running these drivers is
+connected to the motor drivers either directly via two serial ports,
+or using two USB-Serial converters.
+
+2. INSTALLATION
+
+Follow these steps to install these drivers:
+   i) let ROS_PACKAGES_PATH include the folder containing these
+      packages
+   ii) build the drivers using the command "rosmake scout_driver scout_odometry"
+
+3. USAGE
+
+The scout_launch contains a launch file that runs all relevant nodes,
+that is, the command "roslaunch scout_launch scout.launch" starts
+everthing, including loading the necessary parameters.
+
+IMPORTANT: this launch file takes as arguments the device drivers
+corresponding to the devices where the motor controllers are attached
+to. This can be changed either directly on the launch file, or on the
+roslaunch command line, e.g.
+"roslaunch scout_launch scout.launch motor0:=/dev/ttyUSB1 motor1:=/dev/ttyUSB0"
+
+The interface provided by these drivers includes motor commands
+through the standard /cmd_vel topic and odometry through the standard
+TF scheme.
+
+4. PACKAGES
+
+These drivers include these packages:
+  * scout_config -- contains a YAML file with the kinematic parameters
+    of the Scout. These can be changed to improve wheel odometry.
+  * scout_driver -- contains the low-level hardware drivers, including
+    the velocity convertion node and an interface to a joystick.
+  * scout_launch -- contains the launch file to launch all nodes
+  * scout_msgs -- contains the definition of some custom message
+    formats (only relevant for the low level drivers)
+  * scout_odometry -- contains a node to compute odometry
+
+5. NODES
+
+Once launched, these nodes are running:
+  * motors -- low-level drivers to the robot motors
+  * joy -- joystick driver
+  * joydrive -- commands the robot motors via joystick commands
+  * odometry_node -- publishes as a TF the robot odometry, that is, a
+    transformation from frame /odom to frame /base_link
+  * scout_move_base_interface -- converts motion commands in /cmd_vel
+    topic into low-level motor commands
+
+6. PARAMETERS
+
+The kinematic parameters are set in the file scout_config/scout.yaml.
+These are:
+  * LAMBDA_L -- ticks per meter for the Left wheel
+  * LAMBDA_R -- ticks per meter for the Right wheel
+  * L -- distance (in meters) between wheels
+
+==

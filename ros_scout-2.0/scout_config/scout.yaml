@@ -1,0 +1,4 @@
+#Odometry calibration parameters
+LAMBDA_L: -76113.3333333
+LAMBDA_R: 75971.50000
+L: 0.34054732

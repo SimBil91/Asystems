@@ -1,0 +1,10 @@
+uint8   cmd
+
+# NOP (cmd=0)
+
+# SET POSITION (cmd=1)
+float32 x
+float32 y
+float32 t
+
+---

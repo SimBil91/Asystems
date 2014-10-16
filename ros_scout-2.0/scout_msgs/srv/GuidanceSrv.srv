@@ -1,0 +1,15 @@
+uint8   cmd
+
+# NOP (cmd=0)
+
+# SET GOAL
+#   cmd=1 for direct
+#   cmd=2 for path planning
+float32 x
+float32 y
+float32 t
+
+---
+
+bool success
+string result

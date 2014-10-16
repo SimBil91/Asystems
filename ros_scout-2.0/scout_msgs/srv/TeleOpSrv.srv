@@ -1,0 +1,13 @@
+uint8   cmd
+
+# TELEOP
+#   cmd=0 for STOP
+#   cmd=1 for FORWARD/BACKWARD
+#   cmd=2 for ROTATE
+float32 velocity
+float32 timeout  # 0 for non-stop
+
+---
+
+bool success
+string result

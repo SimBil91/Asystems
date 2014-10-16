@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Arguments: motor ports -->
+  <arg name="motor0" default="/dev/ttyUSB0"/>
+  <arg name="motor1" default="/dev/ttyUSB1"/>
+
+  <!-- Scout drivers -->
+  <node name="motors"   pkg="scout_driver"  type="motors" respawn="true" output="screen">
+    <param name="port0" value="$(arg motor0)"/>
+    <param name="port1" value="$(arg motor1)"/>
+  </node>
+  <!--node name="sensors"  pkg="scout_driver"  type="sensors"  output="screen"/-->
+  <node name="joy"      pkg="joy"           type="joy_node"  respawn="true"  output="screen"/>
+  <node name="joydrive" pkg="scout_driver"  type="joydrive"/>
+  
+  <!-- Odometry node -->
+  <node pkg="scout_odometry" name="odometry_node" type="odometry_node" required="true" output="screen">
+    <rosparam command="load" file="$(find scout_config)/scout.yaml"/>
+    <param name="odometry_frame_id" value="odom"/>
+    <param name="base_frame_id" value="base_link" />
+    <remap from="motors" to="/scout/motors" />
+    <remap from="odometry" to="/odom" />
+    <param name="debug" value="false" type="bool" />
+  </node>
+
+  <!--- Velocity convertion node -->
+  <rosparam command="load" file="$(find scout_config)/scout.yaml"/>
+  <node name="scout_move_base_interface" pkg="scout_driver" type="scout_move_base_interface"/>
+</launch>

@@ -1,0 +1,14 @@
+<package>
+  <description brief="scout_msgs">
+
+     scout_msgs
+
+  </description>
+  <author>Scout user</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/scout_msgs</url>
+
+</package>
+
+
