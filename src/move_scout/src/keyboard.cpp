@@ -5,12 +5,16 @@
 #include <termios.h>
 #include <time.h>
 #include <iostream>
+#include <sound_play/sound_play.h>
+
+#define SPEECH 1
 
 #define KEYCODE_R 0x43
 #define KEYCODE_L 0x44
 #define KEYCODE_U 0x41
 #define KEYCODE_D 0x42
 #define KEYCODE_Q 0x71
+
 
 int kfd = 0;
 struct termios cooked, raw;
@@ -25,8 +29,9 @@ void quit(int sig)
 
 int main(int argc, char **argv)
 {
-  ros::init(argc, argv, "talker");
+  ros::init(argc, argv, "keyboard");
   ros::NodeHandle n;
+  sound_play::SoundClient sc; // Object for playing sounds
   ros::Publisher chatter_pub = n.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
   ros::Rate loop_rate(50);
   signal(SIGINT,quit);
@@ -42,10 +47,18 @@ int main(int argc, char **argv)
   tcsetattr(kfd, TCSANOW, &raw);
   puts("Reading from keyboard");
   puts("---------------------------");
-  puts("Use arrow keys to move the Scout 1.");
+  puts("Use arrow keys to move the Scout 1. \nPress 'u' to increase speed and 'd' to decrease it.");
   float linear,angular;
   double last_send;
-  while (ros::ok())
+  usleep(500000);
+
+  if (SPEECH) {
+	  sc.startWave("/home/simon/ROS_WS/src/move_scout/src/R2D2.wav");
+	  usleep(1500000);
+	  sc.say("Hi, I'm Scoutyi! Use your arrow keys to move me!");
+  }
+
+  while (ros::ok()&&c!='q')
   {
 	  // get the next event from the keyboard
 	      if(read(kfd, &c, 1) < 0)
@@ -55,29 +68,44 @@ int main(int argc, char **argv)
 	      }
 	      linear=angular=0;
 	      ROS_DEBUG("value: 0x%02X\n", c);
-
 	      switch(c)
 	      {
 	        case KEYCODE_L:
 	          ROS_DEBUG("LEFT");
 	          angular=1.0;
 	          dirty = true;
+	          if (SPEECH) sc.say("Left!");
 	          break;
 	        case KEYCODE_R:
 	          ROS_DEBUG("RIGHT");
 	          angular = -1.0;
 	          dirty = true;
+	          if (SPEECH) sc.say("Right!");
 	          break;
 	        case KEYCODE_U:
 	          ROS_DEBUG("UP");
 	          linear = 1.0;
 	          dirty = true;
+	          if (SPEECH) sc.say("Forward!");
 	          break;
 	        case KEYCODE_D:
 	          ROS_DEBUG("DOWN");
 	          linear = -1.0;
 	          dirty = true;
+	          if (SPEECH) sc.say("Back!");
 	          break;
+	        case 'u':
+			  ROS_INFO("SPEED++");
+			  scale_l+=0.1;
+			  scale_a+=0.1;
+			  if (SPEECH) sc.say("going faster");
+			  break;
+	        case 'd':
+			  ROS_INFO("SPEED--");
+			  scale_l+=0.1;
+			  scale_a+=0.1;
+			  if (SPEECH) sc.say("going slower");
+			  break;
 	      }
 
     geometry_msgs::Twist vel;
@@ -94,11 +122,13 @@ int main(int argc, char **argv)
     	vel.angular.z=0;
     	chatter_pub.publish(vel);
     }
-    std::cout << (clock()-last_send)*(1000/CLOCKS_PER_SEC);
     ros::spinOnce();
     loop_rate.sleep();
 
   }
+  tcsetattr(kfd, TCSANOW, &cooked);
+  ros::shutdown();
+  exit(0);
 
   return 0;
 }

@@ -17,17 +17,7 @@
 
 
 
-// start gmapping
 
-	<node name="gmapping" pkg="gmapping" type="slam_gmapping" args="scan:=base_scan" output="screen">
-    		<param name="linearUpdate" value="0.1" />
-    		<param name="angularUpdate" value="0.05" /> 
-    		<param name="xmin" value="-20" />   
-    		<param name="ymin" value="-20" />
-    		<param name="xmax" value="20" />    
-    		<param name="ymax" value="20" />
-    		<param name="maxUrange" value="6" />        
- 	</node>
     
 
 
