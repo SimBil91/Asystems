@@ -50,7 +50,7 @@ int main(int argc, char **argv)
   puts("Use arrow keys to move the Scout 1. \nPress 'u' to increase speed and 'd' to decrease it.");
   float linear,angular;
   double last_send;
-  usleep(500000);
+  usleep(1000000);
 
   if (SPEECH) {
 	  sc.startWave("/home/simon/ROS_WS/src/move_scout/src/R2D2.wav");
@@ -92,7 +92,7 @@ int main(int argc, char **argv)
 	          ROS_DEBUG("DOWN");
 	          linear = -1.0;
 	          dirty = true;
-	          if (SPEECH) sc.say("Back!");
+	          if (SPEECH) sc.say("Backg!");
 	          break;
 	        case 'u':
 			  ROS_INFO("SPEED++");

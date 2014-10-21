@@ -1,0 +1,5 @@
+<launch>
+<include file="$(find scout_launch)/scout.launch" />
+<include file="$(find sound_play)/soundplay_node.launch" />
+<node name="keyboard" pkg="move_scout" type="keyboard" output="screen" />	
+</launch>
