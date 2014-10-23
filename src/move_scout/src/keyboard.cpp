@@ -47,17 +47,17 @@ int main(int argc, char **argv)
   tcsetattr(kfd, TCSANOW, &raw);
   puts("Reading from keyboard");
   puts("---------------------------");
-  puts("Use arrow keys to move the Scout 1. \nPress 'u' to increase speed and 'd' to decrease it.");
+  puts("Use arrow keys to move the Scout 1. \nPress 'u' to increase speed and 'd' to decrease it.\n Press 's' to stop.");
   float linear,angular;
   double last_send;
-  usleep(1000000);
+  usleep(2000000);
 
   if (SPEECH) {
 	  sc.startWave("/home/simon/ROS_WS/src/move_scout/src/R2D2.wav");
 	  usleep(1500000);
 	  sc.say("Hi, I'm Scoutyi! Use your arrow keys to move me!");
   }
-
+  geometry_msgs::Twist vel;
   while (ros::ok()&&c!='q')
   {
 	  // get the next event from the keyboard
@@ -84,15 +84,15 @@ int main(int argc, char **argv)
 	          break;
 	        case KEYCODE_U:
 	          ROS_DEBUG("UP");
-	          linear = 1.0;
+	          linear = -1.0;
 	          dirty = true;
 	          if (SPEECH) sc.say("Forward!");
 	          break;
 	        case KEYCODE_D:
 	          ROS_DEBUG("DOWN");
-	          linear = -1.0;
+	          linear = 1.0;
 	          dirty = true;
-	          if (SPEECH) sc.say("Backg!");
+	          if (SPEECH) sc.say("Back!");
 	          break;
 	        case 'u':
 			  ROS_INFO("SPEED++");
@@ -102,13 +102,19 @@ int main(int argc, char **argv)
 			  break;
 	        case 'd':
 			  ROS_INFO("SPEED--");
-			  scale_l+=0.1;
-			  scale_a+=0.1;
+			  scale_l-=0.1;
+			  scale_a-=0.1;
 			  if (SPEECH) sc.say("going slower");
+			  break;
+	        case 's':
+	          vel.linear.x=0;
+	          vel.angular.z=0;
+	          chatter_pub.publish(vel);
+			  ROS_INFO("STOP");
+			  if (SPEECH) sc.say("Stop!");
 			  break;
 	      }
 
-    geometry_msgs::Twist vel;
     vel.linear.x=linear*scale_l;
     vel.angular.z=angular*scale_a;
     if(dirty ==true){
