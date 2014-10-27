@@ -1,0 +1,14 @@
+<launch>
+<!-- Run the map server -->
+    <node name="map_server" pkg="map_server" type="map_server" args="~/ROS_WS/maps/cropped.pgm 0.05"/>
+<!--- Run Hokuyo Laser -->
+ <include file="$(find mapping_scout)/launch/hokuyo.launch" 
+<!--- Run AMCL -->
+ <include file="$(find mapping_scout)/launch/amcl.launch" />
+<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(mapping_scout)/info/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(mapping_scout)/info/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(mapping_scout)/info/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(mapping_scout)/info/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(mapping_scout)/info/base_local_planner_params.yaml" command="load" />
+</node>
