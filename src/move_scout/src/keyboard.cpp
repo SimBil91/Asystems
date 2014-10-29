@@ -53,7 +53,7 @@ int main(int argc, char **argv)
   usleep(2000000);
 
   if (SPEECH) {
-	  sc.startWave("/home/simon/ROS_WS/src/move_scout/src/R2D2.wav");
+	  sc.startWave("/home/simon/ROS_WS/sounds/R2D2.wav");
 	  usleep(1500000);
 	  sc.say("Hi, I'm Scoutyi! Use your arrow keys to move me!");
   }
@@ -84,13 +84,13 @@ int main(int argc, char **argv)
 	          break;
 	        case KEYCODE_U:
 	          ROS_DEBUG("UP");
-	          linear = -1.0;
+	          linear = 1.0;
 	          dirty = true;
 	          if (SPEECH) sc.say("Forward!");
 	          break;
 	        case KEYCODE_D:
 	          ROS_DEBUG("DOWN");
-	          linear = 1.0;
+	          linear = -1.0;
 	          dirty = true;
 	          if (SPEECH) sc.say("Back!");
 	          break;
