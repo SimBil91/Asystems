@@ -10,6 +10,7 @@
 #include "geometry_msgs/Twist.h"
 #include <math.h>
 #include <sound_play/sound_play.h>
+#include <iostream>
 
 #define SPEECH 1
 
@@ -36,7 +37,7 @@ enum Gesture recognize_gesture(tf::StampedTransform &left_hand,tf::StampedTransf
 	int gesture_count=0;
 	// Recognize gestures:
 	// Set Threshold, Half of maximum length (Later replaced by calibration)
-	double threshold=0.5;
+	double threshold=0.55;
 	// Left Hand LEFT
 	if (left_hand.getOrigin().x()>threshold&&left_hand.getOrigin().y()<threshold&&left_hand.getOrigin().z()<threshold&&compute_norm(right_hand)<threshold) {
 		gesture=LEFT;
@@ -162,6 +163,8 @@ int main(int argc, char** argv){
 		}
 		gesture_prev=gesture;
     }
+    std::cout << "Left_Arm:" << compute_norm(body_left_hand) << "\n";
+    std::cout << "Right_Arm:" << compute_norm(body_right_hand) << "\n";
     // Set velocity suiting to Gesture command
     vel.linear.x=linear*scale_l;
     vel.angular.z=angular*scale_a;
