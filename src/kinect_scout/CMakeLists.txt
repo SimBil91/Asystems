@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   geometry_msgs
 )
+find_package( OpenCV REQUIRED )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -96,6 +97,7 @@ catkin_package(
 # include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
 )
 
 ## Declare a cpp library
@@ -105,14 +107,15 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable(move_gestures src/move_gestures.cpp)
+add_executable(move_location src/move_location.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
  add_dependencies(move_gestures kinect_scout_generate_messages_cpp)
-
+ add_dependencies(move_location kinect_scout_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
  target_link_libraries(move_gestures ${catkin_LIBRARIES} )
-
+ target_link_libraries(move_location ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 #############
 ## Install ##
 #############

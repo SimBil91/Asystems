@@ -107,9 +107,9 @@ int main(int argc, char** argv){
 	  sc.say("Hi, I'm Scoutyi! Use gestures to move me!");
 	  usleep(2000000);
   }
-
+  tf::StampedTransform body_left_hand, body_right_hand;
   while (n.ok()){
-    tf::StampedTransform body_left_hand, body_right_hand;
+
     try{
       listener.lookupTransform("/torso_1", "/left_hand_1",
                                        ros::Time(0), body_left_hand);
@@ -173,6 +173,5 @@ int main(int argc, char** argv){
     rate.sleep();
   }
   return 0;
-};
-
+}
 
