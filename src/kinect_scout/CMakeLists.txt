@@ -94,7 +94,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(include)
+include_directories(include)
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
@@ -106,8 +106,9 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(move_gestures src/move_gestures.cpp)
+add_executable(move_gestures src/move_gestures.cpp src/gestures.cpp)
 add_executable(move_location src/move_location.cpp)
+add_executable(move_loc_gest src/move_loc_gest.cpp src/gestures.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -116,6 +117,7 @@ add_executable(move_location src/move_location.cpp)
 ## Specify libraries to link a library or executable target against
  target_link_libraries(move_gestures ${catkin_LIBRARIES} )
  target_link_libraries(move_location ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+ target_link_libraries(move_loc_gest ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 #############
 ## Install ##
 #############
