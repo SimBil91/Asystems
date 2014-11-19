@@ -2,7 +2,7 @@
  
 <!-- start laser_range_finder -->
       <group ns="laser_range_finder">
-        <node pkg="urg_node" name="laser_scan" type="urg_node"/>
+        <node pkg="urg_node" name="laser_scan" type="urg_node" output="screen" />
 		<param name="port" value="/dev/ttyACM0"/>
     		<param name="frame_id" value="base_link"/>
    		<param name="calibrate_time" type="bool" value="true"/>  

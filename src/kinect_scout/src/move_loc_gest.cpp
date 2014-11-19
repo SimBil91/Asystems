@@ -28,12 +28,12 @@ int main(int argc, char** argv) {
 	// Move Base
 	typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 	//tell the action client that we want to spin a thread by default
-	//MoveBaseClient ac("move_base", true);
+	MoveBaseClient ac("move_base", true);
 	//wait for the action server to come up
 	/*while(!ac.waitForServer(ros::Duration(5.0))){
 	  ROS_INFO("Waiting for the move_base action server to come up");
 	}*/
-	//move_base_msgs::MoveBaseGoal goal;
+	move_base_msgs::MoveBaseGoal goal;
 
 	// MAP
 	Mat map;
@@ -47,7 +47,11 @@ int main(int argc, char** argv) {
 
 	Gesture gesture, gesture_prev=NONE;
 	int goto_location=0;
-	while (n.ok()) {
+	cvNamedWindow("Map", CV_WINDOW_NORMAL);
+	//SetWindowProperty("Map", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+	int button=0;
+	int prev_location=0;
+	while (n.ok()&button!='q') {
 		try {
 			listener.lookupTransform("/torso_1", "/left_hand_1", ros::Time(0),
 					body_left_hand);
@@ -63,16 +67,16 @@ int main(int argc, char** argv) {
 		if (gesture_prev!=gesture) {
 			switch (gesture) {
 				case LEFT:
-					goto_location=1;
-					break;
-				case RIGHT:
 					goto_location=2;
 					break;
+				case RIGHT:
+					goto_location=1;
+					break;
 				case UP_LEFT:
-					goto_location=3;
+					goto_location=4;
 					break;
 				case UP_RIGHT:
-					goto_location=4;
+					goto_location=3;
 					break;
 				case UP_BOTH:
 					goto_location=0;
@@ -100,15 +104,19 @@ int main(int argc, char** argv) {
 				circle(map_draw, Goals[i], 8, Scalar(255,0,0),2);
 			}
 		}
-		imshow("Map: 5th floor", map_draw);  // Show the image
-		waitKey(30);
-		//goal.target_pose.header.frame_id = "base_link";
-		//goal.target_pose.header.stamp = ros::Time::now();
-	    //goal.target_pose.pose.position.x = 1.0;
-		//goal.target_pose.pose.orientation.w = 1.0;
-		/*ac.sendGoal(goal);
-		ROS_INFO("Sending goal");
-		ac.waitForResult();
+	    imshow("Map", map_draw);  // Show the image
+		button=waitKey(30);
+		if (goto_location!=0&(prev_location!=goto_location)) {
+			goal.target_pose.header.frame_id = "map";
+			goal.target_pose.header.stamp = ros::Time::now();
+			goal.target_pose.pose.position.x = Goals[goto_location-1].x*0.05;
+			goal.target_pose.pose.position.y = (map.size().height-Goals[goto_location-1].y)*0.05;
+			goal.target_pose.pose.orientation.w = 1;
+			ac.sendGoal(goal);
+			ROS_INFO("Sending goal (%f,%f)!", goal.target_pose.pose.position.x,goal.target_pose.pose.position.y);
+		}
+		prev_location=goto_location;
+		/*ac.waitForResult();
 		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
 		    ROS_INFO("Hooray, the base moved 1 meter forward");
 		else

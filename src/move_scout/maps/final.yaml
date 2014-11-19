@@ -2,5 +2,5 @@ free_thresh: 0.196
 image: final.pgm
 negate: 0
 occupied_thresh: 0.65
-origin: [-14.45, -16.45, 0.0]
+origin: [0.0, 0.0, 0.0]
 resolution: 0.05
