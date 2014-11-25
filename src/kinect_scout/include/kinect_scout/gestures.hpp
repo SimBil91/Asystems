@@ -12,7 +12,7 @@
 #include <tf/transform_listener.h>
 #include "geometry_msgs/Twist.h"
 
-enum Gesture {NONE,LEFT,RIGHT,UP_LEFT,UP_RIGHT,FORWARD_LEFT,FORWARD_RIGHT, FORWARD_BOTH, UP_BOTH};
+enum Gesture {NONE,LEFT,RIGHT,UP_LEFT,UP_RIGHT,FORWARD_LEFT,FORWARD_RIGHT, FORWARD_BOTH, UP_BOTH, GOD};
 
 double compute_distance(tf::StampedTransform &frame1, tf::StampedTransform &frame2);
 double compute_norm(tf::StampedTransform &frame1);

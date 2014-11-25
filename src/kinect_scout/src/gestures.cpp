@@ -69,9 +69,15 @@ enum Gesture recognize_gesture(tf::StampedTransform &left_hand,tf::StampedTransf
 		gesture=FORWARD_BOTH;
 		gesture_count++;
 	}
+	// GOD, Left and right Hand
+	if (right_hand.getOrigin().x()<-threshold&&right_hand.getOrigin().y()>-threshold&&right_hand.getOrigin().z()>-threshold&&left_hand.getOrigin().x()>threshold&&left_hand.getOrigin().y()<threshold&&left_hand.getOrigin().z()<threshold) {
+		gesture=GOD;
+		gesture_count++;
+	}
 	// if multiple gestures found return no gesture
 	if (gesture_count==1)
 		return gesture;
 	else
 		return NONE;
 }
+
