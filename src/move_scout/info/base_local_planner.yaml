@@ -1,4 +1,3 @@
-
 max_vel_x: 0.2
 min_vel_x: 0.05
 max_rotational_vel: 0.5

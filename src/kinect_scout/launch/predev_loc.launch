@@ -1,0 +1,6 @@
+<launch>
+<node pkg="openni_tracker" type="openni_tracker" respawn="false" name="openni_tracker" output="screen">
+</node>
+<node pkg="kinect_scout" type="move_loc_gest" respawn="false" name="move_loc_gest" output="screen">
+</node>
+</launch>
