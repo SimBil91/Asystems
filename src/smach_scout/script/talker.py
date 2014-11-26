@@ -49,10 +49,11 @@ class mapping(smach.State):
 
 
 
+
 # define state moving
 class moving(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['to_start','to_arrow_keys','to_predefined_position','to_kinect_navigation','reset'])
+        smach.State.__init__(self, outcomes=['to_start','reset'])
 
     def execute(self, userdata):
         rospy.loginfo('Executing state moving')
@@ -62,14 +63,14 @@ class moving(smach.State):
 	if x==0:
            return 'to_start'
 
-	elif x==1:
-	   return 'to_arrow_keys'
+	#elif x==1:
+	 #  return 'to_arrow_keys'
 
-	elif x==2:
-	   return 'to_predefined_position'
+	#elif x==2:
+	 #  return 'to_predefined_position'
 
-	elif x==3:
-	   return 'to_kinect_navigation'
+	#elif x==3:
+	 #  return 'to_kinect_navigation'
 
 	else:
 	   return 'reset'
@@ -77,48 +78,48 @@ class moving(smach.State):
 
 
 # define state arrow_keys
-class arrow_keys(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['to_moving'])
+#class arrow_keys(smach.State):
+#    def __init__(self):
+#        smach.State.__init__(self, outcomes=['to_moving'])
+#
+#    def execute(self, userdata):
+#        rospy.loginfo('Executing state arrow_keys')
 
-    def execute(self, userdata):
-        rospy.loginfo('Executing state arrow_keys')
-
-	print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-	x = input("Arrow keys driving\n  0 - exit")
-
-	if x==0:
-           return 'to_moving'
+#	print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+#	x = input("Arrow keys driving\n  0 - exit")
+#
+#	if x==0:
+#           return 'to_moving'
 	
 
 # define state predefined_position
-class predefined_position(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['to_moving'])
+#class predefined_position(smach.State):
+#    def __init__(self):
+#        smach.State.__init__(self, outcomes=['to_moving'])
 
-    def execute(self, userdata):
-        rospy.loginfo('Executing state arrow_keys')
+#    def execute(self, userdata):
+#        rospy.loginfo('Executing state arrow_keys')
 
-	print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-	x = input("pre-defined position navigation\n  0 - exit")
+#	print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+#	x = input("pre-defined position navigation\n  0 - exit")
 
-	if x==0:
-           return 'to_moving'
+#	if x==0:
+#           return 'to_moving'
 
 
 # define state predefined_position
-class kinect_navigation(smach.State):
-    def __init__(self):
-        smach.State.__init__(self, outcomes=['to_moving'])
+#class kinect_navigation(smach.State):
+#    def __init__(self):
+#        smach.State.__init__(self, outcomes=['to_moving'])
 
-    def execute(self, userdata):
-        rospy.loginfo('Executing state arrow_keys')
+#    def execute(self, userdata):
+#        rospy.loginfo('Executing state arrow_keys')
 
-	print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
-	x = input("kinect navigation\n  0 - exit")
+#	print('\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n')
+#	x = input("kinect navigation\n  0 - exit")
 
-	if x==0:
-           return 'to_moving'
+#	if x==0:
+#           return 'to_moving'
 
 
 
@@ -147,21 +148,22 @@ def main():
 
 	smach.StateMachine.add('moving', moving(), 
                                transitions={'to_start':'start',
-					    'to_arrow_keys':'arrow_keys',
-					    'to_predefined_position':'predefined_position',
-					    'to_kinect_navigation':'kinect_navigation',
 					    'reset':'moving'})
 
-	smach.StateMachine.add('arrow_keys', moving(), 
-                               transitions={'to_moving':'moving'})
+#					    'to_arrow_keys':'arrow_keys',
+#					    'to_predefined_position':'predefined_position',
+#					    'to_kinect_navigation':'kinect_navigation',
+					    
+#	smach.StateMachine.add('arrow_keys', moving(), 
+#                               transitions={'to_moving':'moving'})
 
 
-	smach.StateMachine.add('predefined_position', moving(), 
-                               transitions={'to_moving':'moving'})
+#	smach.StateMachine.add('predefined_position', moving(), 
+#                               transitions={'to_moving':'moving'})
 
 
-	smach.StateMachine.add('kinect_navigation', moving(), 
-                               transitions={'to_moving':'moving'})
+#	smach.StateMachine.add('kinect_navigation', moving(), 
+#                               transitions={'to_moving':'moving'})
 					    
 
 
