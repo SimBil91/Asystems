@@ -249,14 +249,14 @@ int main(int argc, char** argv) {
 			// fix angle
 			if (do_fix_location==0&&fix_angle==0&&(body_right_hand.getOrigin().x()<-threshold&&body_right_hand.getOrigin().y()>-threshold&&body_right_hand.getOrigin().z()>-threshold)) {
 				do_fix_angle=1;
-				fixed_angle=atan((projectedPoints[0].y-fixed_location.y)/(projectedPoints[0].x-fixed_location.x))/3.141592653*180;
+				fixed_angle=atan2((projectedPoints[0].y-fixed_location.y),(projectedPoints[0].x-fixed_location.x))/3.141592653*180;
 				fix_angle=1;
 			}
 			else do_fix_angle=0;
 			if (button=='d') {fix_angle=1;fixed_angle=atan2((projectedPoints[0].y-fixed_location.y),(projectedPoints[0].x+fixed_location.x))*180/3.141592653;}
     		// get angle between projected Hand and fixed point and draw
 			if (!fix_angle) {
-				int angle=atan((projectedPoints[0].y-fixed_location.y)/(projectedPoints[0].x-fixed_location.x))/3.141592653*180;
+				int angle=atan2((projectedPoints[0].y-fixed_location.y),(projectedPoints[0].x-fixed_location.x))/3.141592653*180;
 				drawArrow(map_draw, fixed_location, Scalar(255,0,0), angle, 7, 2);
 			}
 			else {
