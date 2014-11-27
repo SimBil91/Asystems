@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
 	move_base_msgs::MoveBaseGoal goal;
 	// MAP
 	Mat map;
-	map = imread(ros::package::getPath("move_scout")+"maps/final.pgm",
+	map = imread(ros::package::getPath("move_scout")+"/maps/final.pgm",
 			CV_LOAD_IMAGE_GRAYSCALE);
 	if (!map.data) {  // Check for invalid input
 		std::cout << "Could not open or find the map" << std::endl;

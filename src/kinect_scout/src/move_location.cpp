@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 	Mat P = (Mat_<double>(3, 4) << 525.0, 0, 319.5, 0, 0, 525.0, 239.5, 0, 0, 0, 1, 0);
 	// READ AND DISPLAY MAP
 	Mat map;
-	map = imread(ros::package::getPath("move_scout")+"maps/final.pgm",
+	map = imread(ros::package::getPath("move_scout")+"/maps/final.pgm",
 			CV_LOAD_IMAGE_GRAYSCALE);
 	if (!map.data) {  // Check for invalid input
 		std::cout << "Could not open or find the map" << std::endl;
