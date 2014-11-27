@@ -9,6 +9,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   geometry_msgs
+  nav_msgs
+  sensor_msgs
 )
 find_package( OpenCV REQUIRED )
 
@@ -107,7 +109,7 @@ include_directories(
 
 ## Declare a cpp executable
 add_executable(move_gestures src/move_gestures.cpp src/gestures.cpp)
-add_executable(move_location src/move_location.cpp src/gestures.cpp)
+add_executable(move_location src/move_location.cpp src/gestures.cpp src/visualize.cpp)
 add_executable(move_loc_gest src/move_loc_gest.cpp src/gestures.cpp src/visualize.cpp)
 
 ## Add cmake target dependencies of the executable/library

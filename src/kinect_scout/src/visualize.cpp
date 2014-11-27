@@ -29,8 +29,47 @@ void drawArrow(Mat& img, Point p, const Scalar& color, double angle, int arrowMa
     line(img, p, q, color, thickness, lineType, shift);
 }
 
-void add_status(Mat& img,int width, vector<string> information) {
+void push_message(vector<Status_message>& Status, string message, int active) {
+	Status_message st_message;
+	st_message.message=message;
+	st_message.active=active;
+	Status.push_back(st_message);
+}
+
+void add_status(Mat& img,int width, vector<Status_message> information) {
+	// create black container and add text to img
+	Mat bar = Mat().zeros(img.size().height,width, img.type());
+	Status_message current_status;
+	int pad_height=10;
+	int pad_width=10;
+	double font_size=4;
+	Size textSize;
+	while (!information.empty()) {
+		current_status=information.back();
+		textSize = getTextSize(current_status.message, FONT_HERSHEY_COMPLEX_SMALL,
+				font_size,1 , 0);
+
+		if ((textSize.width>(width-20))) {
+			font_size=font_size*0.9;
+			if (font_size<=0.1) information.back().message="2long";
+		}
+		else if (pad_height>bar.size().height-20) {
+			break;
+		}
+		else {
+		information.pop_back();
+		pad_height+=textSize.height;
+		Scalar color;
+		if (current_status.active==0) color=CV_RGB(255,0,0);
+		else if (current_status.active==1) color=CV_RGB(0,255,0);
+		else if (current_status.active==2) color=CV_RGB(255,255,0);
+		putText(bar, current_status.message, cv::Point(pad_width,pad_height),
+												FONT_HERSHEY_COMPLEX_SMALL, font_size, color, 1, CV_AA);
+		pad_height+=10;
+		font_size=4;
+		}
+	}
 	// append image to the right
-	Size size;
-	cv::hconcat(img, Mat().zeros(img.size().height,width, img.type()), img);
+	cv::hconcat(img,bar,img);
+
 }
