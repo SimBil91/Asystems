@@ -6,12 +6,15 @@
 <!--- Run Hokuyo Laser -->
  <include file="$(find mapping_scout)/launch/hokuyo.launch" />
 
+<!--- Run Scouty -->
+ <include file="$(find scout_launch)/scout.launch" />
 
 <!--- Run AMCL -->
  <include file="$(find mapping_scout)/launch/amcl.launch" />
 
 <!--- Run Soundplay -->
-<node pkg="sound_play" type="soundplay_node" respawn="false" name="soundplay_node" output="screen">
+<node pkg="sound_play" type="soundplay_node.py" respawn="false" name="soundplay_node.py" output="screen">
+</node>
 
 <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <rosparam file="$(find move_scout)/info/costmap_common_params.yaml" command="load" ns="global_costmap" />
