@@ -12,9 +12,14 @@
 #include <sound_play/sound_play.h>
 #include <iostream>
 #include "kinect_scout/gestures.hpp"
+#include <opencv2/core/core.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/calib3d/calib3d.hpp>
+#include <ros/package.h>
+#include <opencv2/imgproc/imgproc.hpp>
 
 int SPEECH = 1;
-
+using namespace cv;
 int main(int argc, char** argv){
   ros::init(argc, argv, "move_gestures");
 
@@ -25,10 +30,12 @@ int main(int argc, char** argv){
   geometry_msgs::Twist vel; // Set velocity values
   double linear,angular; // velocity parameters
   double scale_l=0.2,scale_a=0.4; // scale velocity
-  Gesture gesture, gesture_prev=NONE;
+  cvNamedWindow("Map", CV_WINDOW_NORMAL);
+  cvSetWindowProperty("Map", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+  Gesture gesture=NONE;
+  Gesture gesture_prev=NONE;
   sound_play::SoundClient sc; // Object for playing sounds
   usleep(2000000);
-
   if (SPEECH) {
 	  sc.startWave("/home/simon/ROS_WS/sounds/R2D2.wav");
 	  usleep(1500000);
@@ -36,7 +43,10 @@ int main(int argc, char** argv){
 	  usleep(2000000);
   }
   tf::StampedTransform body_left_hand, body_right_hand;
-  while (n.ok()){
+  Mat img=imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",
+			CV_LOAD_IMAGE_COLOR);
+  int button=0;
+  while (n.ok()&&button!='q'){
 
     try{
       listener.lookupTransform("/torso_1", "/left_hand_1",
@@ -59,37 +69,55 @@ int main(int argc, char** argv){
 				ROS_INFO("GO_LEFT!");
 				angular=1.0;
 				if (SPEECH) sc.say("Left!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
+						CV_LOAD_IMAGE_COLOR);
 				break;
 			case RIGHT:
 				ROS_INFO("GO_RIGHT!");
 				angular=-1.0;
 				if (SPEECH) sc.say("Right!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
+										CV_LOAD_IMAGE_COLOR);
 				break;
 			case UP_LEFT: case UP_RIGHT:
 				ROS_INFO("GO_Back!");
 				linear=-1.0;
 				if (SPEECH) sc.say("Back!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/back.png",
+										CV_LOAD_IMAGE_COLOR);
 				break;
 			case UP_BOTH:
 				ROS_INFO("GO_Back_FAST!");
 				linear=-1.5;
 				if (SPEECH) sc.say("Fast Back!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_back.png",
+										CV_LOAD_IMAGE_COLOR);
 				break;
 			case FORWARD_LEFT: case FORWARD_RIGHT:
 				ROS_INFO("GO_FORWARD!");
 				linear=1.0;
 				if (SPEECH) sc.say("Forward!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_forward.png",
+										CV_LOAD_IMAGE_COLOR);
 				break;
 			case FORWARD_BOTH:
 				ROS_INFO("GO_FORWARD_FAST!");
 				linear=1.5;
 				if (SPEECH) sc.say("Fast Forward!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/forward.png",
+										CV_LOAD_IMAGE_COLOR);
 				break;
 			default: // NULL, no gesture recognized
 				ROS_INFO("STOP!");
 				if (SPEECH) sc.say("Stop!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",
+										CV_LOAD_IMAGE_COLOR);
 		}
 		gesture_prev=gesture;
+		if (!img.data) {  // Check for invalid input
+			std::cout << "Could not open or find the image" << std::endl;
+			return -1;
+		}
     }
     std::cout << "Left_Arm:" << compute_norm(body_left_hand) << "\n";
     std::cout << "Right_Arm:" << compute_norm(body_right_hand) << "\n";
@@ -98,7 +126,9 @@ int main(int argc, char** argv){
     vel.angular.z=angular*scale_a;
     //ROS_INFO("vel:%f | ang:%f", vel.linear.x, vel.angular.z);
     chatter_pub.publish(vel);
-    rate.sleep();
+    imshow("Map", img);  // Show the image
+    button=waitKey(30);
+    ros::spinOnce();
   }
   return 0;
 }

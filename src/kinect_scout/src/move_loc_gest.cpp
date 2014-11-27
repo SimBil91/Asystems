@@ -12,6 +12,7 @@
 #include <tf/transform_listener.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <ros/package.h>
 #include <math.h>
 #include <iostream>
 #include <time.h>
@@ -68,7 +69,7 @@ int main(int argc, char** argv) {
 	move_base_msgs::MoveBaseGoal goal;
 	// MAP
 	Mat map;
-	map = imread("/home/simon/ROS_WS/maps/final.pgm",
+	map = imread(ros::package::getPath("move_scout")+"maps/final.pgm",
 			CV_LOAD_IMAGE_GRAYSCALE);
 	if (!map.data) {  // Check for invalid input
 		std::cout << "Could not open or find the map" << std::endl;
@@ -80,7 +81,7 @@ int main(int argc, char** argv) {
 	Gesture gesture_prev=NONE;
 	int goto_location=0;
 	cvNamedWindow("Map", CV_WINDOW_NORMAL);
-	//tftcvSetWindowProperty("Map", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
+	cvSetWindowProperty("Map", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 	int button=0;
 	int prev_location=0;
 	int send_goal=0;
@@ -89,7 +90,7 @@ int main(int argc, char** argv) {
 	ros::Subscriber laser;
 	ros::Subscriber odometry;
 	time_t start_time;
-	while (n.ok()&button!='q') {
+	while (n.ok()&&button!='q') {
 		// Get Scoutys position
 		pos = n.subscribe("amcl_pose", 1000, amcl_pose);
 		laser = n.subscribe("odom", 1000, check_odom);

@@ -11,6 +11,7 @@ find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   nav_msgs
   sensor_msgs
+  roslib
 )
 find_package( OpenCV REQUIRED )
 
@@ -108,7 +109,7 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(move_gestures src/move_gestures.cpp src/gestures.cpp)
+add_executable(move_gestures src/move_gestures.cpp src/gestures.cpp src/visualize.cpp)
 add_executable(move_location src/move_location.cpp src/gestures.cpp src/visualize.cpp)
 add_executable(move_loc_gest src/move_loc_gest.cpp src/gestures.cpp src/visualize.cpp)
 
@@ -117,7 +118,7 @@ add_executable(move_loc_gest src/move_loc_gest.cpp src/gestures.cpp src/visualiz
  add_dependencies(move_gestures kinect_scout_generate_messages_cpp)
  add_dependencies(move_location kinect_scout_generate_messages_cpp)
 ## Specify libraries to link a library or executable target against
- target_link_libraries(move_gestures ${catkin_LIBRARIES} )
+ target_link_libraries(move_gestures ${catkin_LIBRARIES} ${OpenCV_LIBS} )
  target_link_libraries(move_location ${catkin_LIBRARIES} ${OpenCV_LIBS} )
  target_link_libraries(move_loc_gest ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 #############
