@@ -253,7 +253,7 @@ int main(int argc, char** argv) {
 				fix_angle=1;
 			}
 			else do_fix_angle=0;
-			if (button=='d') {fix_angle=1;fixed_angle=atan((projectedPoints[0].y-fixed_location.y)/(projectedPoints[0].x-fixed_location.x))/3.141592653*180;}
+			if (button=='d') {fix_angle=1;fixed_angle=atan2((projectedPoints[0].y-fixed_location.y),(projectedPoints[0].x+fixed_location.x))*180/3.141592653;}
     		// get angle between projected Hand and fixed point and draw
 			if (!fix_angle) {
 				int angle=atan((projectedPoints[0].y-fixed_location.y)/(projectedPoints[0].x-fixed_location.x))/3.141592653*180;
