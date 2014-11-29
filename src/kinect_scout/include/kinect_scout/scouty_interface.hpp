@@ -15,6 +15,8 @@
 #include <tf/transform_listener.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <actionlib/client/simple_action_client.h>
+#include <sound_play/sound_play.h>
+#include "geometry_msgs/Twist.h"
 #include <ros/package.h>
 #include <math.h>
 #include <iostream>

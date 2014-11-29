@@ -8,6 +8,7 @@
 
 extern ros::Time loc_start_time;
 extern int scouty_pose[4];
+extern int SPEECH;
 
 int do_send_goal(move_base_msgs::MoveBaseGoal &goal, int fixed_angle, Point fixed_location, Mat map, Mat& map_draw, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>& ac ) {
 	// This function sends a goal
@@ -31,6 +32,79 @@ int do_send_goal(move_base_msgs::MoveBaseGoal &goal, int fixed_angle, Point fixe
 		putText(map_draw, "Goal sent!", cv::Point((map.size().width-textSize.width)/2,(map.size().height+textSize.height)/2),
 								FONT_HERSHEY_COMPLEX_SMALL, 1, cvScalar(0,0,255), 2, CV_AA);
 		return 1; // Goal sent
+}
+
+Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& Status, ros::Publisher& chatter_pub, sound_play::SoundClient& sc) {
+	geometry_msgs::Twist vel; // Set velocity values
+	double linear,angular; // velocity parameters
+	double scale_l=0.2,scale_a=0.4; // scale velocity
+	Gesture gesture_prev=NONE;
+	// Read first state image
+	Mat img=imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",CV_LOAD_IMAGE_COLOR);
+	// Only check for new action if new gesture is recognized!
+	if (gesture_prev!=gesture) {
+		linear=angular=0;
+		switch (gesture) {
+			case LEFT:
+				ROS_INFO("GO_LEFT!");
+				angular=-1.0;
+				if (SPEECH) sc.say("Left!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
+						CV_LOAD_IMAGE_COLOR);
+				break;
+			case RIGHT:
+				ROS_INFO("GO_RIGHT!");
+				angular=1.0;
+				if (SPEECH) sc.say("Right!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case UP_LEFT: case UP_RIGHT:
+				ROS_INFO("GO_Forward!");
+				linear=1.0;
+				if (SPEECH) sc.say("Forward!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/forward.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case UP_BOTH:
+				ROS_INFO("GO_Forward_FAST!");
+				linear=-1.5;
+				if (SPEECH) sc.say("Fast Forward!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_forward.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case DOWN_LEFT: case DOWN_RIGHT:
+				ROS_INFO("GO_BACK!");
+				linear=1.0;
+				if (SPEECH) sc.say("Back!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/back.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case DOWN_BOTH:
+				ROS_INFO("GO_Back_FAST!");
+				linear=1.5;
+				if (SPEECH) sc.say("Fast Back!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_back.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			default: // NULL, no gesture recognized
+				ROS_INFO("STOP!");
+				if (SPEECH) sc.say("Stop!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",
+										CV_LOAD_IMAGE_COLOR);
+		}
+		gesture_prev=gesture;
+		if (!img.data) {  // Check for invalid input
+			std::cout << "Could not open or find the image" << std::endl;
+			exit(0);
+		}
+		// Set velocity suiting to Gesture command
+		vel.linear.x=linear*scale_l;
+		vel.angular.z=angular*scale_a;
+		//Publish velocity data:
+		chatter_pub.publish(vel);
+	}
+	return img;
 }
 
 Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_message>& Status, tf::StampedTransform& openni_right_hand, int gesture_left, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>& ac, move_base_msgs::MoveBaseGoal& goal) {
@@ -187,4 +261,117 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 	return map_draw;
 }
 
+Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_message>& Status, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>& ac, move_base_msgs::MoveBaseGoal& goal) {
+	// Copy map for processing
+	Mat map_draw;
+	cvtColor(map, map_draw, CV_GRAY2RGB);
+	// Some definitions
+	Gesture gesture_prev=NONE;
+	int goto_location=0;
+	int prev_location=0;
+	int send_goal=0;
+	int goal_active=0;
+	time_t start_time;
+
+	// Check if action Server is connected
+	if (ac.isServerConnected()) {
+		push_message(Status,"MB_Server",1);
+	}
+	else {
+		push_message(Status,"MB_Server",0);
+	}
+	if (goal_active) {
+		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+			ROS_INFO("The goal was reached!");
+			push_message(Status,"MB_GOAL",1);
+		}
+		else if (ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
+			push_message(Status,"MB_GOAL",2);
+		}
+		else {
+			push_message(Status,"MB_GOAL",0);
+		}
+	}
+	// Check for messages
+	// Check for amcl pose
+	if ((ros::Time::now().toSec()-loc_start_time.toSec())<3.0) {
+		push_message(Status,"Localization",1);
+		// Draw Scouty to map
+		if (scouty_pose[3]) {
+			scouty_pose[1]=map.size().height-scouty_pose[1];
+			scouty_pose[3]=0;
+		}
+		circle(map_draw, Point(scouty_pose[0],scouty_pose[1]), 4, Scalar(0,0,0),2);
+		drawArrow(map_draw, Point(scouty_pose[0],scouty_pose[1]), Scalar(0,0,0), scouty_pose[2], 7, 2);
+	}
+	else {
+		push_message(Status,"Localization",0);
+	}
+	// Switch states according to gestures
+	if (gesture_prev!=gesture) {
+		switch (gesture) {
+			case LEFT:
+				if (!goal_active) goto_location=2;
+				break;
+			case RIGHT:
+				if (!goal_active) goto_location=1;
+				break;
+			case UP_LEFT:
+				if (!goal_active) goto_location=4;
+				break;
+			case UP_RIGHT:
+				if (!goal_active) goto_location=3;
+				break;
+			case UP_BOTH:
+				goto_location=0;
+				send_goal=0;
+				if (goal_active) {
+					// Cancel current goals
+					ac.cancelAllGoals();
+					goal_active=0;
+				}
+				break;
+			case GOD:
+				if (!send_goal) start_time=clock();
+				send_goal=1;
+				break;
+			default:
+				send_goal=0;// NULL, no gesture recognized
+		}
+		gesture_prev=gesture;
+	}
+	// Define 4 Robot Positions
+	Point2f Goals[4]={Point2f(41,167),Point2f(320,192),Point2f(178,319),Point2f(178,31)};
+	double angles[4]={0,140,270,20};
+	// Draw goals
+	for (int i=0; i<4;i++) {
+		if (i==goto_location-1) {
+			circle(map_draw, Goals[i], 8, Scalar(0,255,0),2);
+			drawArrow(map_draw, Goals[i], Scalar(0,255,0), angles[i], 7, 2);
+		}
+		else {
+			if (!goal_active) {
+				circle(map_draw, Goals[i], 8, Scalar(255,0,0),2);
+				drawArrow(map_draw, Goals[i], Scalar(255,0,0), angles[i], 7, 2);
+			}
+		}
+	}
+	// Try to send goal
+	if (goto_location!=0&&send_goal&&!goal_active) {
+		if ((clock()-start_time)/(CLOCKS_PER_SEC/2)>3) {
+			do_send_goal(goal,angles[goto_location-1],Goals[goto_location-1],map,map_draw,ac);
+		}
+		else {
+			std::stringstream ss;
+			ss<<(int)(3-((clock()-start_time)/(CLOCKS_PER_SEC/2)));
+			Size textSize = getTextSize(ss.str(), FONT_HERSHEY_COMPLEX_SMALL,4, 2, 0);
+			putText(map_draw, ss.str(), cv::Point((map.size().width-textSize.width)/2,(map.size().height+textSize.height)/2),
+					FONT_HERSHEY_COMPLEX_SMALL, 4, cvScalar(0,0,255), 2, CV_AA);
+		}
+	}
+	prev_location=goto_location;
+
+	return map_draw;
+
+}
 

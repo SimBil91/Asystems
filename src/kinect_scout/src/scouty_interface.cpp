@@ -19,6 +19,7 @@ int scouty_pose[4]={0,0,0,0}; // x,y,angle,update
 ros::Time loc_start_time;
 ros::Time odom_start_time;
 ros::Time laser_start_time;
+int SPEECH = 1;
 // ----------Global variables-----------
 
 // Functions valid for all different modes, they provide feedback about the current state of the sytem
@@ -124,6 +125,10 @@ int main(int argc, char** argv) {
 	ros::Subscriber pos;
 	ros::Subscriber laser;
 	ros::Subscriber odometry;
+	// Create Publisher to publish velocity commands
+	ros::Publisher veloc_pub=n.advertise<geometry_msgs::Twist>("/cmd_vel", 1);
+	// Create sound_play object
+	sound_play::SoundClient sc;
 	// Create button, which is filled by OpenCV loop
 	int button=0;
 	// Time when switch gesture is made
@@ -151,18 +156,19 @@ int main(int argc, char** argv) {
 
 		if (fsm_operation_mode==INIT) {
 			// Initialisation, only run at the beginning
-			fsm_operation_mode=MOVE_LOCATIONS;
+			if (SPEECH) {  sc.say("Hi, I'm Scoutyi! Ready to serve your needs!");}
+			fsm_operation_mode=MOVE_GESTURES;
 		}
 		else if (fsm_operation_mode==MOVE_GESTURES) {
 			// Transition if gesture is hold for 2 seconds
 			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_PRE_LOCATIONS;ROS_INFO("MODE:PRE_LOCATIONS"); time_set=0;}
 			// Move Scouty with Kinect gestures
-
+			interface=move_gestures(n,gesture,Status,veloc_pub,sc);
 		}
 		else if (fsm_operation_mode==MOVE_PRE_LOCATIONS) {
 			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_LOCATIONS;ROS_INFO("MODE:LOCATIONS"); time_set=0;}
 			// Send Scouty to predefined Locations
-
+			interface=move_pre_location(n,map,gesture,Status,ac,goal);
 		}
 		else if (fsm_operation_mode==MOVE_LOCATIONS) {
 			// Transition:
