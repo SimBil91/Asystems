@@ -67,44 +67,44 @@ int main(int argc, char** argv){
 		switch (gesture) {
 			case LEFT:
 				ROS_INFO("GO_LEFT!");
-				angular=1.0;
+				angular=-1.0;
 				if (SPEECH) sc.say("Left!");
 				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
 						CV_LOAD_IMAGE_COLOR);
 				break;
 			case RIGHT:
 				ROS_INFO("GO_RIGHT!");
-				angular=-1.0;
+				angular=1.0;
 				if (SPEECH) sc.say("Right!");
 				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
 										CV_LOAD_IMAGE_COLOR);
 				break;
 			case UP_LEFT: case UP_RIGHT:
-				ROS_INFO("GO_Back!");
-				linear=-1.0;
+				ROS_INFO("GO_Forward!");
+				linear=1.0;
+				if (SPEECH) sc.say("Forward!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/forward.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case UP_BOTH:
+				ROS_INFO("GO_Forward_FAST!");
+				linear=-1.5;
+				if (SPEECH) sc.say("Fast Forward!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_forward.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case DOWN_LEFT: case DOWN_RIGHT:
+				ROS_INFO("GO_BACK!");
+				linear=1.0;
 				if (SPEECH) sc.say("Back!");
 				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/back.png",
 										CV_LOAD_IMAGE_COLOR);
 				break;
-			case UP_BOTH:
+			case DOWN_BOTH:
 				ROS_INFO("GO_Back_FAST!");
-				linear=-1.5;
+				linear=1.5;
 				if (SPEECH) sc.say("Fast Back!");
 				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_back.png",
-										CV_LOAD_IMAGE_COLOR);
-				break;
-			case FORWARD_LEFT: case FORWARD_RIGHT:
-				ROS_INFO("GO_FORWARD!");
-				linear=1.0;
-				if (SPEECH) sc.say("Forward!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_forward.png",
-										CV_LOAD_IMAGE_COLOR);
-				break;
-			case FORWARD_BOTH:
-				ROS_INFO("GO_FORWARD_FAST!");
-				linear=1.5;
-				if (SPEECH) sc.say("Fast Forward!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/forward.png",
 										CV_LOAD_IMAGE_COLOR);
 				break;
 			default: // NULL, no gesture recognized

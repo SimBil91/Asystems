@@ -112,6 +112,7 @@ include_directories(
 add_executable(move_gestures src/move_gestures.cpp src/gestures.cpp src/visualize.cpp)
 add_executable(move_location src/move_location.cpp src/gestures.cpp src/visualize.cpp)
 add_executable(move_loc_gest src/move_loc_gest.cpp src/gestures.cpp src/visualize.cpp)
+add_executable(scouty_interface src/scouty_interface.cpp src/gestures.cpp src/visualize.cpp src/operation_modes.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -121,6 +122,7 @@ add_executable(move_loc_gest src/move_loc_gest.cpp src/gestures.cpp src/visualiz
  target_link_libraries(move_gestures ${catkin_LIBRARIES} ${OpenCV_LIBS} )
  target_link_libraries(move_location ${catkin_LIBRARIES} ${OpenCV_LIBS} )
  target_link_libraries(move_loc_gest ${catkin_LIBRARIES} ${OpenCV_LIBS} )
+ target_link_libraries(scouty_interface ${catkin_LIBRARIES} ${OpenCV_LIBS} )
 #############
 ## Install ##
 #############
