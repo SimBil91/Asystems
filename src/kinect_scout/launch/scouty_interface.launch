@@ -7,12 +7,12 @@
 <node pkg="sound_play" type="soundplay_node.py" respawn="false" name="soundplay_node.py" output="screen">
 </node>
 
-<!--- Run Openni-Tracker -->
-<node pkg="openni_tracker" type="openni_tracker" respawn="false" name="openni_tracker" output="screen">
-</node>
-
 <!--- Run interface -->
 <node pkg="kinect_scout" type="scouty_interface" respawn="false" name="scouty_interface" output="screen">
+</node>
+
+<!--- Run Openni-Tracker -->
+<node pkg="openni_tracker" type="openni_tracker" respawn="false" name="openni_tracker" output="screen">
 </node>
 
 </launch>

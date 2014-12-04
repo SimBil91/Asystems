@@ -9,7 +9,12 @@
 extern ros::Time loc_start_time;
 extern int scouty_pose[4];
 extern int SPEECH;
-
+extern FSM_Pre_Locations fsm_pre_locations;
+extern FSM_Locations fsm_locations;
+extern int goto_location;
+extern time_t start_time1;
+extern cv::Point2f fixed_location;
+extern int fixed_angle;
 int do_send_goal(move_base_msgs::MoveBaseGoal &goal, int fixed_angle, Point fixed_location, Mat map, Mat& map_draw, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>& ac ) {
 	// This function sends a goal
 
@@ -49,14 +54,14 @@ Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& 
 				ROS_INFO("GO_LEFT!");
 				angular=-1.0;
 				if (SPEECH) sc.say("Left!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
 						CV_LOAD_IMAGE_COLOR);
 				break;
 			case RIGHT:
 				ROS_INFO("GO_RIGHT!");
 				angular=1.0;
 				if (SPEECH) sc.say("Right!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
 										CV_LOAD_IMAGE_COLOR);
 				break;
 			case UP_LEFT: case UP_RIGHT:
@@ -120,14 +125,6 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 	Mat map_draw;
 	cvtColor(map, map_draw, CV_GRAY2RGB);
 	Gesture gesture_prev=NONE;
-	int fix_location=0;
-	int send_goal=0;
-	int goal_active=0;
-	int fix_angle=0;
-	int fixed_angle=0;
-	int do_fix_angle=0;
-	int do_fix_location=0;
-	Point2f fixed_location;
 	time_t start_time;
 	// Check if action Server is connected
 	if (ac.isServerConnected()) {
@@ -136,7 +133,7 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 	else {
 		push_message(Status,"MB_Server",0);
 	}
-	if (goal_active) {
+	if (fsm_locations==lWAIT_FOR_RESULT) {
 		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
 			ROS_INFO("The goal was reached!");
 			push_message(Status,"MB_GOAL",1);
@@ -179,83 +176,112 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 	if (projectedPoints[0].y>map.size().height) projectedPoints[0].y=map.size().height;
 	if (projectedPoints[0].y<0) projectedPoints[0].y=0;
 
-	// Transitions between states according to Gesture:
-	if (gesture_prev!=gesture) {
-		switch (gesture) {
-			case UP_BOTH:
-				fix_location=0;
-				do_fix_location=0;
-				send_goal=0;
-				do_fix_angle=0;
-				fix_angle=0;
-				if (goal_active) {
-					// Cancel current goals
-					ac.cancelAllGoals();
-					goal_active=0;
-				}
-				break;
-			case GOD:
-				if (!send_goal) start_time=clock();
-				send_goal=1;
-				break;
-			default:
-				send_goal=0;
-				break;
+	// ------ FSM Location ----
+	if (fsm_locations==lWAIT_FOR_GESTURE) {
+		fixed_location=Point2f(0,0);
+		fixed_angle=450; // larger than 360;
+		// If gesture equals
+		if (gesture_left==1) {
+			Scalar intensity = map.at<uchar>((uchar)projectedPoints[0].y, (uchar)projectedPoints[0].x);
+			if (intensity.val[0]>=250) {
+				fsm_locations=lFIX_LOCATION;
+			}
 		}
-		gesture_prev=gesture;
+	}
+	else if (fsm_locations==lFIX_LOCATION) {
+		// Check if pixel is free space, otherwise do not allow fixing
+		fixed_location=projectedPoints[0];
+		if (!gesture_left) fsm_locations=lWAIT_FOR_GESTURE2;
+		else fixed_location=Point2f(0,0);
+	}
+	else if (fsm_locations==lWAIT_FOR_GESTURE2) {
+		if (gesture_left) {
+			fsm_locations=lFIX_ANGLE;
+		}
+		if (gesture==UP_BOTH) fsm_locations=lWAIT_FOR_GESTURE;
+	}
+	else if (fsm_locations==lFIX_ANGLE) {
+		// fix angle
+		fixed_angle=-atan2((projectedPoints[0].y-fixed_location.y),(projectedPoints[0].x-fixed_location.x))/3.141592653*180;
+		fsm_locations=lWAIT_FOR_CONFIRMATION;
+	}
+	else if (fsm_locations==lWAIT_FOR_CONFIRMATION) {
+		if (gesture==UP_BOTH) {
+			fsm_locations=lWAIT_FOR_GESTURE;
+		}
+		if (gesture==GOD) {
+			if ((clock()-start_time1)/(CLOCKS_PER_SEC/2)>3) {
+				fsm_locations=lSEND_GOAL;
+			}
+			else {
+				std::stringstream ss;
+				ss<<(int)(3-((clock()-start_time1)/(CLOCKS_PER_SEC/2)));
+				Size textSize = getTextSize(ss.str(), FONT_HERSHEY_COMPLEX_SMALL,4, 2, 0);
+				putText(map_draw, ss.str(), cv::Point((map.size().width-textSize.width)/2,(map.size().height+textSize.height)/2),
+						FONT_HERSHEY_COMPLEX_SMALL, 4, cvScalar(0,0,255), 2, CV_AA);
+			}
+		}
+		else start_time1=clock();
+	}
+	else if (fsm_locations==lSEND_GOAL) {
+		do_send_goal(goal,fixed_angle,fixed_location,map,map_draw,ac);
+		fsm_locations=lWAIT_FOR_RESULT;
+	}
+	else if (fsm_locations==lWAIT_FOR_RESULT) {
+		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+			ROS_INFO("The goal was reached!");
+			push_message(Status,"MB_GOAL",1);
+			fsm_locations=lGOAL_REACHED;
+		}
+		else if (ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
+			push_message(Status,"MB_GOAL",2);
+		}
+		else {
+			push_message(Status,"MB_GOAL",0);
+			fsm_locations=lRESAMPLE_PARTICLES;
+		}
+		if (gesture==UP_BOTH) {
+			fsm_locations=lCANCEL_GOAL;
+		}
+	}
+	else if (fsm_locations==lRESAMPLE_PARTICLES) {
+		std_srvs::Empty::Request req;
+		std_srvs::Empty::Response res;
+		ros::service::call("global_localization",req,res);
+		ROS_INFO("Scouty lost. Resample particles...");
+		fsm_locations=lGOAL_ABORTED;
+
+	}
+	else if (fsm_locations==lCANCEL_GOAL) {
+		// Cancel current goals
+		ac.cancelAllGoals();
+		fsm_locations=lWAIT_FOR_GESTURE;
+	}
+	else if (fsm_locations==lGOAL_REACHED){
+		if(gesture==UP_BOTH) fsm_locations=lWAIT_FOR_GESTURE;
+	}
+	else if (fsm_locations==lGOAL_ABORTED){
+		if(gesture==UP_BOTH) fsm_locations=lWAIT_FOR_GESTURE;
 	}
 
-	// FSM
-	if (fix_location==0&&gesture_left) {
-		do_fix_location=1;
-		fixed_location=projectedPoints[0];
-	}
-	else if (do_fix_location&&!gesture_left) {
-		// Check if pixel is free space, otherwise do not allow fixing
-		Scalar intensity = map.at<uchar>((uchar)fixed_location.y, (uchar)fixed_location.x);
-		if (intensity.val[0]>=250)	fix_location=1;
-	}
-	else do_fix_location=0;
+	// ------ END FSM -----
+	// Transitions between states according to Gesture:
 
 	// Draw hand position onto map plane
-	if (fix_location) {
+	if (fixed_location!=Point2f(0,0)) {
 		circle(map_draw, fixed_location, 8, Scalar(0,255,0),2);
 	}
 	else circle(map_draw, projectedPoints[0], 8, Scalar(255,0,0),2);
 
 	// Get angle and draw it
-	if (fix_location) {
-		// fix angle
-		if (do_fix_location==0&&fix_angle==0&&gesture_left) {
-			do_fix_angle=1;
-			fixed_angle=-atan2((projectedPoints[0].y-fixed_location.y),(projectedPoints[0].x-fixed_location.x))/3.141592653*180;
-			fix_angle=1;
-		}
-		else do_fix_angle=0;
+	if (fixed_location!=Point2f(0,0)) {
 		// get angle between projected Hand and fixed point and draw
-		if (!fix_angle) {
+		if (fixed_angle==450) {
 			int angle=-atan2((projectedPoints[0].y-fixed_location.y),(projectedPoints[0].x-fixed_location.x))/3.141592653*180;
 			drawArrow(map_draw, fixed_location, Scalar(255,0,0), angle, 7, 2);
 		}
 		else {
 			drawArrow(map_draw, fixed_location, Scalar(0,255,0), fixed_angle, 7, 2);
-			fix_angle=1;
-		}
-	}
-	if (fix_location!=0&&fix_angle!=0&&send_goal&&!goal_active) {
-		// Try to send a goal
-		if ((clock()-start_time)/(CLOCKS_PER_SEC/2)>3) {
-			goal_active=do_send_goal(goal, fixed_angle, fixed_location, map, map_draw, ac);
-		}
-		else {
-			// Wait for countdown:
-			std::stringstream ss;
-			ss<<(int)(3-((clock()-start_time)/(CLOCKS_PER_SEC/2)));
-			Size textSize = getTextSize(ss.str(), FONT_HERSHEY_COMPLEX_SMALL,4, 2, 0);
-			// Print Countdown to screen
-			putText(map_draw, ss.str(), cv::Point((map.size().width-textSize.width)/2,(map.size().height+textSize.height)/2),
-					FONT_HERSHEY_COMPLEX_SMALL, 4, cvScalar(0,0,255), 2, CV_AA);
-			goal_active=0;
 		}
 	}
 	return map_draw;
@@ -267,11 +293,6 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 	cvtColor(map, map_draw, CV_GRAY2RGB);
 	// Some definitions
 	Gesture gesture_prev=NONE;
-	int goto_location=0;
-	int prev_location=0;
-	int send_goal=0;
-	int goal_active=0;
-	time_t start_time;
 
 	// Check if action Server is connected
 	if (ac.isServerConnected()) {
@@ -279,18 +300,6 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 	}
 	else {
 		push_message(Status,"MB_Server",0);
-	}
-	if (goal_active) {
-		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-			ROS_INFO("The goal was reached!");
-			push_message(Status,"MB_GOAL",1);
-		}
-		else if (ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
-			push_message(Status,"MB_GOAL",2);
-		}
-		else {
-			push_message(Status,"MB_GOAL",0);
-		}
 	}
 	// Check for messages
 	// Check for amcl pose
@@ -307,42 +316,102 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 	else {
 		push_message(Status,"Localization",0);
 	}
-	// Switch states according to gestures
-	if (gesture_prev!=gesture) {
-		switch (gesture) {
-			case LEFT:
-				if (!goal_active) goto_location=2;
-				break;
-			case RIGHT:
-				if (!goal_active) goto_location=1;
-				break;
-			case UP_LEFT:
-				if (!goal_active) goto_location=4;
-				break;
-			case UP_RIGHT:
-				if (!goal_active) goto_location=3;
-				break;
-			case UP_BOTH:
-				goto_location=0;
-				send_goal=0;
-				if (goal_active) {
-					// Cancel current goals
-					ac.cancelAllGoals();
-					goal_active=0;
-				}
-				break;
-			case GOD:
-				if (!send_goal) start_time=clock();
-				send_goal=1;
-				break;
-			default:
-				send_goal=0;// NULL, no gesture recognized
-		}
-		gesture_prev=gesture;
-	}
+
+
 	// Define 4 Robot Positions
 	Point2f Goals[4]={Point2f(41,167),Point2f(320,192),Point2f(178,319),Point2f(178,31)};
 	double angles[4]={0,140,270,20};
+
+
+	// -----FSM PRE_LOCATIONS-----
+	if (fsm_pre_locations==WAIT_FOR_GESTURE) {
+		goto_location=0;
+		// If gesture equals
+		if (gesture==LEFT||gesture==RIGHT||gesture==UP_RIGHT||gesture==DOWN_LEFT) {
+			fsm_pre_locations=FIX_LOCATION;
+		}
+	}
+	if (fsm_pre_locations==FIX_LOCATION) {
+		switch (gesture) {
+			case LEFT:
+				 goto_location=2;
+				 fsm_pre_locations=WAIT_FOR_CONFIRMATION;
+				break;
+			case RIGHT:
+				 goto_location=1;
+				 fsm_pre_locations=WAIT_FOR_CONFIRMATION;
+				break;
+			case DOWN_LEFT:
+				 goto_location=3;
+				 fsm_pre_locations=WAIT_FOR_CONFIRMATION;
+				break;
+			case UP_RIGHT:
+				 goto_location=4;
+				 fsm_pre_locations=WAIT_FOR_CONFIRMATION;
+				break;
+			default:
+				break;
+		}
+	}
+	else if (fsm_pre_locations==WAIT_FOR_CONFIRMATION) {
+		if (gesture==UP_BOTH) {
+			fsm_pre_locations=WAIT_FOR_GESTURE;
+		}
+		if (gesture==GOD) {
+			if ((clock()-start_time1)/(CLOCKS_PER_SEC/2)>3) {
+				fsm_pre_locations=SEND_GOAL;
+			}
+			else {
+				std::stringstream ss;
+				ss<<(int)(3-((clock()-start_time1)/(CLOCKS_PER_SEC/2)));
+				Size textSize = getTextSize(ss.str(), FONT_HERSHEY_COMPLEX_SMALL,4, 2, 0);
+				putText(map_draw, ss.str(), cv::Point((map.size().width-textSize.width)/2,(map.size().height+textSize.height)/2),
+						FONT_HERSHEY_COMPLEX_SMALL, 4, cvScalar(0,0,255), 2, CV_AA);
+			}
+		}
+		else start_time1=clock();
+	}
+	else if (fsm_pre_locations==SEND_GOAL) {
+		do_send_goal(goal,angles[goto_location-1],Goals[goto_location-1],map,map_draw,ac);
+		fsm_pre_locations=WAIT_FOR_RESULT;
+	}
+	else if (fsm_pre_locations==WAIT_FOR_RESULT) {
+		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
+			ROS_INFO("The goal was reached!");
+			push_message(Status,"MB_GOAL",1);
+			fsm_pre_locations=GOAL_REACHED;
+		}
+		else if (ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
+			push_message(Status,"MB_GOAL",2);
+		}
+		else {
+			push_message(Status,"MB_GOAL",0);
+			fsm_pre_locations=RESAMPLE_PARTICLES;
+		}
+		if (gesture==UP_BOTH) {
+			fsm_pre_locations=CANCEL_GOAL;
+		}
+	}
+	else if (fsm_pre_locations==RESAMPLE_PARTICLES) {
+		std_srvs::Empty::Request req;
+		std_srvs::Empty::Response res;
+		ros::service::call("global_localization",req,res);
+		ROS_INFO("Scouty lost. Resample particles...");
+		fsm_pre_locations=GOAL_ABORTED;
+
+	}
+	else if (fsm_pre_locations==CANCEL_GOAL) {
+		// Cancel current goals
+		ac.cancelAllGoals();
+		fsm_pre_locations=WAIT_FOR_GESTURE;
+	}
+	else if (fsm_pre_locations==GOAL_REACHED){
+		if(gesture==UP_BOTH) fsm_pre_locations=WAIT_FOR_GESTURE;
+	}
+	else if (fsm_pre_locations==GOAL_ABORTED){
+		if(gesture==UP_BOTH) fsm_pre_locations=WAIT_FOR_GESTURE;
+	}
+	// ----- END FSM
 	// Draw goals
 	for (int i=0; i<4;i++) {
 		if (i==goto_location-1) {
@@ -350,27 +419,13 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 			drawArrow(map_draw, Goals[i], Scalar(0,255,0), angles[i], 7, 2);
 		}
 		else {
-			if (!goal_active) {
+			if (fsm_pre_locations!=WAIT_FOR_RESULT) {
 				circle(map_draw, Goals[i], 8, Scalar(255,0,0),2);
 				drawArrow(map_draw, Goals[i], Scalar(255,0,0), angles[i], 7, 2);
 			}
 		}
 	}
-	// Try to send goal
-	if (goto_location!=0&&send_goal&&!goal_active) {
-		if ((clock()-start_time)/(CLOCKS_PER_SEC/2)>3) {
-			do_send_goal(goal,angles[goto_location-1],Goals[goto_location-1],map,map_draw,ac);
-		}
-		else {
-			std::stringstream ss;
-			ss<<(int)(3-((clock()-start_time)/(CLOCKS_PER_SEC/2)));
-			Size textSize = getTextSize(ss.str(), FONT_HERSHEY_COMPLEX_SMALL,4, 2, 0);
-			putText(map_draw, ss.str(), cv::Point((map.size().width-textSize.width)/2,(map.size().height+textSize.height)/2),
-					FONT_HERSHEY_COMPLEX_SMALL, 4, cvScalar(0,0,255), 2, CV_AA);
-		}
-	}
-	prev_location=goto_location;
-
+	std::cout<<"State:"<<fsm_pre_locations<<std::endl;
 	return map_draw;
 
 }

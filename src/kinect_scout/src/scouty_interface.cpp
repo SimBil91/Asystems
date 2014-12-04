@@ -12,6 +12,13 @@
 FSM_Operation_Mode fsm_operation_mode=INIT;
 // 3 FSMs representing the state of each mode
 // ---------FSMs----------
+FSM_Pre_Locations fsm_pre_locations=WAIT_FOR_GESTURE;
+// global variables for fsm:
+int goto_location=0;
+time_t start_time1;
+FSM_Locations fsm_locations=lWAIT_FOR_GESTURE;
+Point2f fixed_location;
+int fixed_angle=0;
 
 // ----------Global variables-----------
 //for Scouty Pose and checking if valid data is received.
@@ -120,7 +127,6 @@ int main(int argc, char** argv) {
 	//cvSetWindowProperty("Scouty_Interface", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 	// Create a Gesture enum, and one for the Left Hand especially
 	Gesture gesture=NONE;
-	bool left_hand;
 	// Create Subscribers to check the system state
 	ros::Subscriber pos;
 	ros::Subscriber laser;
@@ -134,6 +140,7 @@ int main(int argc, char** argv) {
 	// Time when switch gesture is made
 	ros::Time switch_time;
 	bool time_set=0;
+	int left_hand;
 	while(ros::ok()&(button!='q')) {
 		// ---These Variables and functions are shared by all Operation modes---
 		// Generate Status vector
@@ -142,14 +149,14 @@ int main(int argc, char** argv) {
 		get_transforms(listener,body_left_hand,body_right_hand,openni_right_hand,Status);
 		// Recognize gesture
 		gesture=recognize_gesture(body_left_hand, body_right_hand);
-		int left_hand=gesture_is_left(body_right_hand);
+		left_hand=gesture_is_left(body_right_hand);
 		// Check system status
 		check_status(n,pos,laser,odometry,Status);
 		// Define Keyboard values to emulate gestures
 		if (button=='s') gesture=GOD;
 		if (button=='u') gesture=UP_BOTH;
 		if (button=='n') gesture=CORNER_RIGHT;
-		if (button=='f') left_hand=1; else left_hand=0;
+		if (button=='f') left_hand=1;
 		// If the gesture is the menu switch CORNER_RIGHT --> start clock
 		if (gesture==CORNER_RIGHT) {if (!time_set) switch_time=ros::Time::now();time_set=1;}
 		else time_set=0;
@@ -176,8 +183,7 @@ int main(int argc, char** argv) {
 			// Send Scouty to arbitrary Locations indicated
 			interface=move_location(n,map,gesture,Status,openni_right_hand,left_hand,ac,goal);
 		}
-
-		// Add status to Image
+		std::cout<<fsm_locations<<":"<<left_hand<<std::endl;
 		add_status(interface, 150, Status);
 		// Show interface
 		imshow("Scouty_Interface", interface);

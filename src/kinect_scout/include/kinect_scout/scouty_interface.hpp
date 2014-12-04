@@ -31,7 +31,7 @@
 #include "kinect_scout/gestures.hpp"
 #include "kinect_scout/visualize.hpp"
 #include "kinect_scout/operation_modes.hpp"
-
+#include "std_srvs/Empty.h"
 using namespace cv;
 
 enum FSM_Operation_Mode {INIT, MOVE_GESTURES, MOVE_PRE_LOCATIONS, MOVE_LOCATIONS};

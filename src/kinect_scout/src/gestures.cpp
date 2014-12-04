@@ -41,11 +41,11 @@ enum Gesture recognize_gesture(tf::StampedTransform &left_hand,tf::StampedTransf
 	}
 	// left Hand UP and right hand right
 	if (left_hand.getOrigin().y()>threshold&&left_hand.getOrigin().x()<threshold&&left_hand.getOrigin().z()<threshold&&right_hand.getOrigin().x()<-threshold&&right_hand.getOrigin().y()>-threshold&&right_hand.getOrigin().z()>-threshold) {
-		gesture=CORNER_RIGHT;
+		gesture=CORNER_LEFT;
 		gesture_count++;
 	}
 	// left Hand Down
-	if (left_hand.getOrigin().y()<-threshold&&left_hand.getOrigin().x()<threshold&&left_hand.getOrigin().z()<threshold&&compute_norm(right_hand)<threshold) {
+	if (left_hand.getOrigin().y()<(-threshold+0.3)&&left_hand.getOrigin().x()<threshold&&left_hand.getOrigin().z()<threshold&&compute_norm(right_hand)<(threshold-0.3)) {
 		gesture=DOWN_LEFT;
 		gesture_count++;
 	}
@@ -59,19 +59,20 @@ enum Gesture recognize_gesture(tf::StampedTransform &left_hand,tf::StampedTransf
 		gesture=RIGHT;
 		gesture_count++;
 	}
+
 	// right Hand UP
 	if (right_hand.getOrigin().y()>threshold&&right_hand.getOrigin().x()<threshold&&right_hand.getOrigin().z()<threshold&&compute_norm(left_hand)<threshold) {
 		gesture=UP_RIGHT;
 		gesture_count++;
 	}
 	// right Hand DOWN
-	if (right_hand.getOrigin().y()<-threshold&&right_hand.getOrigin().x()<threshold&&right_hand.getOrigin().z()<threshold&&compute_norm(left_hand)<threshold) {
+	if (right_hand.getOrigin().y()<(-threshold+0.3)&&right_hand.getOrigin().x()<threshold&&right_hand.getOrigin().z()<threshold&&compute_norm(left_hand)<(threshold-0.3)) {
 		gesture=DOWN_RIGHT;
 		gesture_count++;
 	}
 	// right Hand UP and left hand left
-	if (right_hand.getOrigin().y()<-threshold&&right_hand.getOrigin().x()<threshold&&right_hand.getOrigin().z()<threshold&&left_hand.getOrigin().x()>threshold&&left_hand.getOrigin().y()<threshold&&left_hand.getOrigin().z()<threshold) {
-		gesture=CORNER_LEFT;
+	if (right_hand.getOrigin().y()>threshold&&right_hand.getOrigin().x()<threshold&&right_hand.getOrigin().z()<threshold&&left_hand.getOrigin().x()>threshold&&left_hand.getOrigin().y()<threshold&&left_hand.getOrigin().z()<threshold) {
+		gesture=CORNER_RIGHT;
 		gesture_count++;
 	}
 	// right Hand in front
@@ -84,8 +85,8 @@ enum Gesture recognize_gesture(tf::StampedTransform &left_hand,tf::StampedTransf
 		gesture=UP_BOTH;
 		gesture_count++;
 	}
-	// Both Hands UP
-	if (left_hand.getOrigin().y()<-threshold&&left_hand.getOrigin().x()<threshold&&left_hand.getOrigin().z()<threshold&&right_hand.getOrigin().y()<-threshold&&right_hand.getOrigin().x()<threshold&&right_hand.getOrigin().z()<threshold) {
+	// Both Hands DOWN
+	if (left_hand.getOrigin().y()<(-threshold+0.3)&&left_hand.getOrigin().x()<threshold&&left_hand.getOrigin().z()<threshold&&right_hand.getOrigin().y()<(-threshold+0.3)&&right_hand.getOrigin().x()<threshold&&right_hand.getOrigin().z()<threshold) {
 		gesture=DOWN_BOTH;
 		gesture_count++;
 	}
@@ -106,10 +107,12 @@ enum Gesture recognize_gesture(tf::StampedTransform &left_hand,tf::StampedTransf
 		return NONE;
 }
 
-int gesture_is_left(tf::StampedTransform &left_hand) {
-	double threshold=0.55;
-	if (left_hand.getOrigin().x()<-threshold&&left_hand.getOrigin().y()>-threshold&&left_hand.getOrigin().z()>-threshold) {
+int gesture_is_left(tf::StampedTransform &right_hand) {
+	double threshold=0.50;
+	if (right_hand.getOrigin().x()<-threshold&&right_hand.getOrigin().y()>-threshold&&right_hand.getOrigin().z()>-threshold) {
 		return 1;
 	}
-	else return 0;
+	else {
+		return 0;
+	}
 }
