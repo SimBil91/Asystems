@@ -51,14 +51,14 @@ Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& 
 		case LEFT:
 			ROS_INFO("GO_LEFT!");
 			angular=-1.0;
-			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Left!");
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Right!");
 			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
 					CV_LOAD_IMAGE_COLOR);
 			break;
 		case RIGHT:
 			ROS_INFO("GO_RIGHT!");
 			angular=1.0;
-			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Right!");
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Left!");
 			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
 									CV_LOAD_IMAGE_COLOR);
 			break;
