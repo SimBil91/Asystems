@@ -39,11 +39,10 @@ int do_send_goal(move_base_msgs::MoveBaseGoal &goal, int fixed_angle, Point fixe
 		return 1; // Goal sent
 }
 
-Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& Status, ros::Publisher& chatter_pub, sound_play::SoundClient& sc) {
+Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& Status, ros::Publisher& chatter_pub, sound_play::SoundClient& sc,Gesture& gesture_prev) {
 	geometry_msgs::Twist vel; // Set velocity values
 	double linear,angular; // velocity parameters
 	double scale_l=0.2,scale_a=0.4; // scale velocity
-	Gesture gesture_prev=NONE;
 	// Read first state image
 	Mat img=imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",CV_LOAD_IMAGE_COLOR);
 	// Only check for new action if new gesture is recognized!
@@ -94,6 +93,8 @@ Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& 
 				break;
 			default: // NULL, no gesture recognized
 				ROS_INFO("STOP!");
+				linear=0;
+				angular=0;
 				if (SPEECH) sc.say("Stop!");
 				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",
 										CV_LOAD_IMAGE_COLOR);

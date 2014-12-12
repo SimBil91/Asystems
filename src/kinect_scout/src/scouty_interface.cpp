@@ -127,6 +127,7 @@ int main(int argc, char** argv) {
 	//cvSetWindowProperty("Scouty_Interface", CV_WND_PROP_FULLSCREEN, CV_WINDOW_FULLSCREEN);
 	// Create a Gesture enum, and one for the Left Hand especially
 	Gesture gesture=NONE;
+	Gesture gesture_prev=NONE;
 	// Create Subscribers to check the system state
 	ros::Subscriber pos;
 	ros::Subscriber laser;
@@ -153,10 +154,13 @@ int main(int argc, char** argv) {
 		// Check system status
 		check_status(n,pos,laser,odometry,Status);
 		// Define Keyboard values to emulate gestures
-		if (button=='s') gesture=GOD;
+		if (button=='o') gesture=GOD;
 		if (button=='u') gesture=UP_BOTH;
 		if (button=='n') gesture=CORNER_RIGHT;
-		if (button=='f') left_hand=1;
+		if (button=='f') gesture=UP_LEFT;
+		if (button=='s') gesture=DOWN_RIGHT;
+		if (button=='a') gesture=LEFT;
+		if (button=='d') gesture=RIGHT;
 		// If the gesture is the menu switch CORNER_RIGHT --> start clock
 		if (gesture==CORNER_RIGHT) {if (!time_set) switch_time=ros::Time::now();time_set=1;}
 		else time_set=0;
@@ -170,7 +174,7 @@ int main(int argc, char** argv) {
 			// Transition if gesture is hold for 2 seconds
 			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_PRE_LOCATIONS;ROS_INFO("MODE:PRE_LOCATIONS"); time_set=0;}
 			// Move Scouty with Kinect gestures
-			interface=move_gestures(n,gesture,Status,veloc_pub,sc);
+			interface=move_gestures(n,gesture,Status,veloc_pub,sc,gesture_prev);
 		}
 		else if (fsm_operation_mode==MOVE_PRE_LOCATIONS) {
 			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_LOCATIONS;ROS_INFO("MODE:LOCATIONS"); time_set=0;}
@@ -185,6 +189,7 @@ int main(int argc, char** argv) {
 		}
 		std::cout<<fsm_locations<<":"<<left_hand<<std::endl;
 		add_status(interface, 150, Status);
+		gesture_prev=gesture;
 		// Show interface
 		imshow("Scouty_Interface", interface);
 		button=waitKey(30);
