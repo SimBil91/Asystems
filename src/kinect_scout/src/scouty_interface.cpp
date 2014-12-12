@@ -161,7 +161,7 @@ int main(int argc, char** argv) {
 		if (button=='s') gesture=DOWN_RIGHT;
 		if (button=='a') gesture=LEFT;
 		if (button=='d') gesture=RIGHT;
-		if (gesture==CORNER_LEFT&&SPEECH) {sc.say("Nice, ass bitch!");}
+		if (gesture==CORNER_LEFT&&SPEECH) {sc.say("Please go out of the way.");}
 		// If the gesture is the menu switch CORNER_RIGHT --> start clock
 		if (gesture==CORNER_RIGHT) {if (!time_set) switch_time=ros::Time::now();time_set=1;}
 		else time_set=0;
@@ -169,6 +169,10 @@ int main(int argc, char** argv) {
 		if (fsm_operation_mode==INIT) {
 			// Initialisation, only run at the beginning
 			sleep(2);
+			std_srvs::Empty::Request req;
+			std_srvs::Empty::Response res;
+			ros::service::call("global_localization",req,res);
+			ROS_INFO("Scouty lost. Resample particles...");
 			if (SPEECH) {sc.say("Hi, I'm Scoutyi! Ready to serve your needs!");}
 			fsm_operation_mode=MOVE_GESTURES;
 		}
@@ -185,7 +189,7 @@ int main(int argc, char** argv) {
 		}
 		else if (fsm_operation_mode==MOVE_LOCATIONS) {
 			// Transition:
-			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_GESTURES;ROS_INFO("MODE:GESTURES"); time_set=0;if (SPEECH) {sc.say("Ready for mapping.");}}
+			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_GESTURES;ROS_INFO("MODE:GESTURES"); time_set=0;}}
 			// Send Scouty to arbitrary Locations indicated
 			interface=move_location(n,map,gesture,Status,openni_right_hand,left_hand,ac,goal,sc);
 		}
