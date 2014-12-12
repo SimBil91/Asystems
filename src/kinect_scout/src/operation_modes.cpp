@@ -47,67 +47,67 @@ Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& 
 	Mat img=imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",CV_LOAD_IMAGE_COLOR);
 	// Only check for new action if new gesture is recognized!
 	linear=angular=0;
-		switch (gesture) {
-			case LEFT:
-				ROS_INFO("GO_LEFT!");
-				angular=-1.0;
-				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Left!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
-						CV_LOAD_IMAGE_COLOR);
-				break;
-			case RIGHT:
-				ROS_INFO("GO_RIGHT!");
-				angular=1.0;
-				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Right!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
-										CV_LOAD_IMAGE_COLOR);
-				break;
-			case UP_LEFT: case UP_RIGHT:
-				ROS_INFO("GO_Forward!");
-				linear=1.0;
-				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Forward!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/forward.png",
-										CV_LOAD_IMAGE_COLOR);
-				break;
-			case UP_BOTH:
-				ROS_INFO("GO_Forward_FAST!");
-				linear=1.5;
-				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Fast Forward!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_forward.png",
-										CV_LOAD_IMAGE_COLOR);
-				break;
-			case DOWN_LEFT: case DOWN_RIGHT:
-				ROS_INFO("GO_BACK!");
-				linear=-1.0;
-				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Back!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/back.png",
-										CV_LOAD_IMAGE_COLOR);
-				break;
-			case DOWN_BOTH:
-				ROS_INFO("GO_Back_FAST!");
-				linear=-1.5;
-				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Fast Back!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_back.png",
-										CV_LOAD_IMAGE_COLOR);
-				break;
-			default: // NULL, no gesture recognized
-				ROS_INFO("STOP!");
-				linear=0;
-				angular=0;
-				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Stop!");
-				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",
-										CV_LOAD_IMAGE_COLOR);
-		}
-		if (!img.data) {  // Check for invalid input
-			std::cout << "Could not open or find the image" << std::endl;
-			exit(0);
-		}
-		// Set velocity suiting to Gesture command
-		vel.linear.x=linear*scale_l;
-		vel.angular.z=angular*scale_a;
-		//Publish velocity data:
-		chatter_pub.publish(vel);
+	switch (gesture) {
+		case LEFT:
+			ROS_INFO("GO_LEFT!");
+			angular=-1.0;
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Left!");
+			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
+					CV_LOAD_IMAGE_COLOR);
+			break;
+		case RIGHT:
+			ROS_INFO("GO_RIGHT!");
+			angular=1.0;
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Right!");
+			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
+									CV_LOAD_IMAGE_COLOR);
+			break;
+		case UP_LEFT: case UP_RIGHT:
+			ROS_INFO("GO_Forward!");
+			linear=1.0;
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Forward!");
+			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/forward.png",
+									CV_LOAD_IMAGE_COLOR);
+			break;
+		case UP_BOTH:
+			ROS_INFO("GO_Forward_FAST!");
+			linear=1.5;
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Fast Forward!");
+			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_forward.png",
+									CV_LOAD_IMAGE_COLOR);
+			break;
+		case DOWN_LEFT: case DOWN_RIGHT:
+			ROS_INFO("GO_BACK!");
+			linear=-1.0;
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Back!");
+			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/back.png",
+									CV_LOAD_IMAGE_COLOR);
+			break;
+		case DOWN_BOTH:
+			ROS_INFO("GO_Back_FAST!");
+			linear=-1.5;
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Fast Back!");
+			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_back.png",
+									CV_LOAD_IMAGE_COLOR);
+			break;
+		default: // NULL, no gesture recognized
+			ROS_INFO("STOP!");
+			linear=0;
+			angular=0;
+			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Stop!");
+			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",
+									CV_LOAD_IMAGE_COLOR);
 	}
+	if (!img.data) {  // Check for invalid input
+		std::cout << "Could not open or find the image" << std::endl;
+		exit(0);
+	}
+	// Set velocity suiting to Gesture command
+	vel.linear.x=linear*scale_l;
+	vel.angular.z=angular*scale_a;
+	//Publish velocity data:
+	chatter_pub.publish(vel);
+
 	return img;
 }
 
