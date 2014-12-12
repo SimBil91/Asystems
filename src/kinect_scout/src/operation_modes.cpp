@@ -111,7 +111,7 @@ Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& 
 	return img;
 }
 
-Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_message>& Status, tf::StampedTransform& openni_right_hand, int gesture_left, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>& ac, move_base_msgs::MoveBaseGoal& goal) {
+Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_message>& Status, tf::StampedTransform& openni_right_hand, int gesture_left, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>& ac, move_base_msgs::MoveBaseGoal& goal, sound_play::SoundClient& sc) {
 
 	// Define Kinect Matrices for Reprojection on image plane:
 	Mat C = (Mat_<double>(3, 3) << 525.0, 0, 319.5, 0, 525.0, 239.5, 0, 0, 1);
@@ -223,6 +223,7 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 		else start_time1=clock();
 	}
 	else if (fsm_locations==lSEND_GOAL) {
+		if (SPEECH) {sc.say("Okay master, navigating to location.");}
 		do_send_goal(goal,fixed_angle,fixed_location,map,map_draw,ac);
 		fsm_locations=lWAIT_FOR_RESULT;
 	}
@@ -240,6 +241,7 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 			fsm_locations=lRESAMPLE_PARTICLES;
 		}
 		if (gesture==UP_BOTH) {
+			if (SPEECH) {sc.say("Why? I really wanted to go to this location.");}
 			fsm_locations=lCANCEL_GOAL;
 		}
 	}
@@ -257,9 +259,11 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 		fsm_locations=lWAIT_FOR_GESTURE;
 	}
 	else if (fsm_locations==lGOAL_REACHED){
+		if (SPEECH) {sc.say("I reached the target. What to do next, master?");}
 		if(gesture==UP_BOTH) fsm_locations=lWAIT_FOR_GESTURE;
 	}
 	else if (fsm_locations==lGOAL_ABORTED){
+		if (SPEECH) {sc.say(" I am lost. I will resample my particles.");}
 		if(gesture==UP_BOTH) fsm_locations=lWAIT_FOR_GESTURE;
 	}
 
@@ -286,7 +290,7 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 	return map_draw;
 }
 
-Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_message>& Status, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>& ac, move_base_msgs::MoveBaseGoal& goal) {
+Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_message>& Status, actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction>& ac, move_base_msgs::MoveBaseGoal& goal,sound_play::SoundClient& sc) {
 	// Copy map for processing
 	Mat map_draw;
 	cvtColor(map, map_draw, CV_GRAY2RGB);
@@ -371,6 +375,7 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 		else start_time1=clock();
 	}
 	else if (fsm_pre_locations==SEND_GOAL) {
+		if (SPEECH) {sc.say("Okay, master. Navigating to predefined location.");}
 		do_send_goal(goal,angles[goto_location-1],Goals[goto_location-1],map,map_draw,ac);
 		fsm_pre_locations=WAIT_FOR_RESULT;
 	}
@@ -388,6 +393,7 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 			fsm_pre_locations=RESAMPLE_PARTICLES;
 		}
 		if (gesture==UP_BOTH) {
+			if (SPEECH) {sc.say("Why, master? Use the next mode to choose more precise locations.");}
 			fsm_pre_locations=CANCEL_GOAL;
 		}
 	}
@@ -405,9 +411,11 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 		fsm_pre_locations=WAIT_FOR_GESTURE;
 	}
 	else if (fsm_pre_locations==GOAL_REACHED){
+		if (SPEECH) {sc.say("Predfined location reached. What to do next?");}
 		if(gesture==UP_BOTH) fsm_pre_locations=WAIT_FOR_GESTURE;
 	}
 	else if (fsm_pre_locations==GOAL_ABORTED){
+		if (SPEECH) {sc.say("I have no idea where I am. I will resample my particles.");}
 		if(gesture==UP_BOTH) fsm_pre_locations=WAIT_FOR_GESTURE;
 	}
 	// ----- END FSM
