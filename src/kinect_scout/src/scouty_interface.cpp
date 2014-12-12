@@ -184,7 +184,7 @@ int main(int argc, char** argv) {
 		}
 		else if (fsm_operation_mode==MOVE_LOCATIONS) {
 			// Transition:
-			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_GESTURES;ROS_INFO("MODE:GESTURES"); time_set=0;if (SPEECH) {if (SPEECH) {sc.say("Ready for mapping.");}}
+			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_GESTURES;ROS_INFO("MODE:GESTURES"); time_set=0;if (SPEECH) {sc.say("Ready for mapping.");}}
 			// Send Scouty to arbitrary Locations indicated
 			interface=move_location(n,map,gesture,Status,openni_right_hand,left_hand,ac,goal,sc);
 		}
