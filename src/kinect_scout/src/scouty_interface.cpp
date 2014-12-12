@@ -157,7 +157,7 @@ int main(int argc, char** argv) {
 		if (button=='o') gesture=GOD;
 		if (button=='u') gesture=UP_BOTH;
 		if (button=='n') gesture=CORNER_RIGHT;
-		if (button=='f') gesture=UP_LEFT;
+		if (button=='w') gesture=UP_LEFT;
 		if (button=='s') gesture=DOWN_RIGHT;
 		if (button=='a') gesture=LEFT;
 		if (button=='d') gesture=RIGHT;
