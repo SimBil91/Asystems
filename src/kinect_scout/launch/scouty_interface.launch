@@ -1,8 +1,5 @@
 <launch>
 
-<!--- Run Soundplay -->
-<node pkg="sound_play" type="soundplay_node" respawn="false" name="soundplay_node" output="screen">
-</node>
 
 <!--- Run interface -->
 <node pkg="kinect_scout" type="scouty_interface" respawn="false" name="scouty_interface" output="screen">
