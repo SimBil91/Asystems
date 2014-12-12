@@ -169,7 +169,7 @@ int main(int argc, char** argv) {
 		if (fsm_operation_mode==INIT) {
 			// Initialisation, only run at the beginning
 			sleep(2);
-			if (SPEECH) {sc.say("Hi, I'm Scoutyi! Master, ready to serve your needs!");}
+			if (SPEECH) {sc.say("Hi, I'm Scoutyi! Ready to serve your needs!");}
 			fsm_operation_mode=MOVE_GESTURES;
 		}
 		else if (fsm_operation_mode==MOVE_GESTURES) {
