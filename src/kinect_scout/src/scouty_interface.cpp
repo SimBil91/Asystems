@@ -173,21 +173,18 @@ int main(int argc, char** argv) {
 		}
 		else if (fsm_operation_mode==MOVE_GESTURES) {
 			// Transition if gesture is hold for 2 seconds
-			if (SPEECH) {sc.say("Ready for mapping.");}
-			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_PRE_LOCATIONS;ROS_INFO("MODE:PRE_LOCATIONS"); time_set=0;}
+			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_PRE_LOCATIONS;ROS_INFO("MODE:PRE_LOCATIONS"); time_set=0;	if (SPEECH) {sc.say("Ready for mapping.");}}
 			// Move Scouty with Kinect gestures
 			interface=move_gestures(n,gesture,Status,veloc_pub,sc,gesture_prev);
 		}
 		else if (fsm_operation_mode==MOVE_PRE_LOCATIONS) {
-			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_LOCATIONS;ROS_INFO("MODE:LOCATIONS"); time_set=0;}
-			if (SPEECH) {sc.say("Choose one predefined location, master.");}
+			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_LOCATIONS;ROS_INFO("MODE:LOCATIONS"); time_set=0;if (SPEECH) {sc.say("Choose one predefined location, master.");}}
 			// Send Scouty to predefined Locations
 			interface=move_pre_location(n,map,gesture,Status,ac,goal,sc);
 		}
 		else if (fsm_operation_mode==MOVE_LOCATIONS) {
-			if (SPEECH) {sc.say("Predefined locations are boring, master, send me to any location.");}
 			// Transition:
-			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_GESTURES;ROS_INFO("MODE:GESTURES"); time_set=0;}
+			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_GESTURES;ROS_INFO("MODE:GESTURES"); time_set=0;if (SPEECH) {sc.say("Predefined locations are boring, master, send me to any location.");}}
 			// Send Scouty to arbitrary Locations indicated
 			interface=move_location(n,map,gesture,Status,openni_right_hand,left_hand,ac,goal,sc);
 		}
