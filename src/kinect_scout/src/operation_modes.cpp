@@ -11,6 +11,7 @@ extern int scouty_pose[4];
 extern int SPEECH;
 extern FSM_Pre_Locations fsm_pre_locations;
 extern FSM_Locations fsm_locations;
+extern FSM_Move fsm_move;
 extern int goto_location;
 extern time_t start_time1;
 extern cv::Point2f fixed_location;
@@ -47,57 +48,74 @@ Mat move_gestures(ros::NodeHandle& n, Gesture& gesture, vector<Status_message>& 
 	Mat img=imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",CV_LOAD_IMAGE_COLOR);
 	// Only check for new action if new gesture is recognized!
 	linear=angular=0;
-	switch (gesture) {
-		case LEFT:
-			ROS_INFO("GO_LEFT!");
-			angular=-1.0;
-			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Right!");
-			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
-					CV_LOAD_IMAGE_COLOR);
-			break;
-		case RIGHT:
-			ROS_INFO("GO_RIGHT!");
-			angular=1.0;
-			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Left!");
-			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
-									CV_LOAD_IMAGE_COLOR);
-			break;
-		case UP_LEFT: case UP_RIGHT:
-			ROS_INFO("GO_Forward!");
-			linear=1.0;
-			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Forward!");
-			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/forward.png",
-									CV_LOAD_IMAGE_COLOR);
-			break;
-		case UP_BOTH:
-			ROS_INFO("GO_Forward_FAST!");
-			linear=1.5;
-			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Fast Forward!");
-			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_forward.png",
-									CV_LOAD_IMAGE_COLOR);
-			break;
-		case DOWN_LEFT: case DOWN_RIGHT:
-			ROS_INFO("GO_BACK!");
-			linear=-1.0;
-			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Back!");
-			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/back.png",
-									CV_LOAD_IMAGE_COLOR);
-			break;
-		case DOWN_BOTH:
-			ROS_INFO("GO_Back_FAST!");
-			linear=-1.5;
-			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Fast Back!");
-			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_back.png",
-									CV_LOAD_IMAGE_COLOR);
-			break;
-		default: // NULL, no gesture recognized
+	if (fsm_move==mWAIT_FOR_GESTURE) {
+		if (gesture==NULL) {
 			ROS_INFO("STOP!");
 			linear=0;
 			angular=0;
 			if (SPEECH&&(gesture_prev!=gesture)) sc.say("Stop!");
 			img = imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",
-									CV_LOAD_IMAGE_COLOR);
+						CV_LOAD_IMAGE_COLOR);
+		}
+		else {
+			fsm_move=mSEND_VELOCITY;
+		}
 	}
+	if (fsm_move==mSEND_VELOCITY) {
+		switch (gesture) {
+			case LEFT:
+				ROS_INFO("GO_LEFT!");
+				angular=-1.0;
+				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Right!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/right.png",
+						CV_LOAD_IMAGE_COLOR);
+				break;
+			case RIGHT:
+				ROS_INFO("GO_RIGHT!");
+				angular=1.0;
+				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Left!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/left.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case UP_LEFT: case UP_RIGHT:
+				ROS_INFO("GO_Forward!");
+				linear=1.0;
+				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Forward!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/forward.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case UP_BOTH:
+				ROS_INFO("GO_Forward_FAST!");
+				linear=1.5;
+				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Fast Forward!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_forward.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case DOWN_LEFT: case DOWN_RIGHT:
+				ROS_INFO("GO_BACK!");
+				linear=-1.0;
+				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Back!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/back.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			case DOWN_BOTH:
+				ROS_INFO("GO_Back_FAST!");
+				linear=-1.5;
+				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Fast Back!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/fast_back.png",
+										CV_LOAD_IMAGE_COLOR);
+				break;
+			default: // NULL, no gesture recognized
+				ROS_INFO("STOP!");
+				linear=0;
+				angular=0;
+				if (SPEECH&&(gesture_prev!=gesture)) sc.say("Stop!");
+				img = imread(ros::package::getPath("kinect_scout")+"/img_scout/no.png",
+										CV_LOAD_IMAGE_COLOR);
+		}
+		fsm_move=mWAIT_FOR_GESTURE;
+	}
+
 	if (!img.data) {  // Check for invalid input
 		std::cout << "Could not open or find the image" << std::endl;
 		exit(0);
@@ -131,18 +149,6 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 	}
 	else {
 		push_message(Status,"MB_Server",0);
-	}
-	if (fsm_locations==lWAIT_FOR_RESULT) {
-		if(ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED) {
-			ROS_INFO("The goal was reached!");
-			push_message(Status,"MB_GOAL",1);
-		}
-		else if (ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
-			push_message(Status,"MB_GOAL",2);
-		}
-		else {
-			push_message(Status,"MB_GOAL",0);
-		}
 	}
 	// Check for amcl pose
 	if ((ros::Time::now().toSec()-loc_start_time.toSec())<3.0) {
@@ -232,6 +238,7 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 			ROS_INFO("The goal was reached!");
 			push_message(Status,"MB_GOAL",1);
 			fsm_locations=lGOAL_REACHED;
+			if (SPEECH) {sc.say("I reached the target. What to do next, master?");}
 		}
 		else if (ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
 			push_message(Status,"MB_GOAL",2);
@@ -251,7 +258,7 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 		ros::service::call("global_localization",req,res);
 		ROS_INFO("Scouty lost. Resample particles...");
 		fsm_locations=lGOAL_ABORTED;
-
+		if (SPEECH) {sc.say(" I am lost. I will resample my particles.");}
 	}
 	else if (fsm_locations==lCANCEL_GOAL) {
 		// Cancel current goals
@@ -259,11 +266,9 @@ Mat move_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Status_
 		fsm_locations=lWAIT_FOR_GESTURE;
 	}
 	else if (fsm_locations==lGOAL_REACHED){
-		if (SPEECH) {sc.say("I reached the target. What to do next, master?");}
 		if(gesture==UP_BOTH) fsm_locations=lWAIT_FOR_GESTURE;
 	}
 	else if (fsm_locations==lGOAL_ABORTED){
-		if (SPEECH) {sc.say(" I am lost. I will resample my particles.");}
 		if(gesture==UP_BOTH) fsm_locations=lWAIT_FOR_GESTURE;
 	}
 
@@ -384,6 +389,7 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 			ROS_INFO("The goal was reached!");
 			push_message(Status,"MB_GOAL",1);
 			fsm_pre_locations=GOAL_REACHED;
+			if (SPEECH) {sc.say("Predfined location reached. What to do next?");}
 		}
 		else if (ac.getState() == actionlib::SimpleClientGoalState::ACTIVE){
 			push_message(Status,"MB_GOAL",2);
@@ -403,7 +409,7 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 		ros::service::call("global_localization",req,res);
 		ROS_INFO("Scouty lost. Resample particles...");
 		fsm_pre_locations=GOAL_ABORTED;
-
+		if (SPEECH) {sc.say("I have no idea where I am. I will resample my particles.");}
 	}
 	else if (fsm_pre_locations==CANCEL_GOAL) {
 		// Cancel current goals
@@ -411,11 +417,9 @@ Mat move_pre_location(ros::NodeHandle& n, Mat& map, Gesture& gesture, vector<Sta
 		fsm_pre_locations=WAIT_FOR_GESTURE;
 	}
 	else if (fsm_pre_locations==GOAL_REACHED){
-		if (SPEECH) {sc.say("Predfined location reached. What to do next?");}
 		if(gesture==UP_BOTH) fsm_pre_locations=WAIT_FOR_GESTURE;
 	}
 	else if (fsm_pre_locations==GOAL_ABORTED){
-		if (SPEECH) {sc.say("I have no idea where I am. I will resample my particles.");}
 		if(gesture==UP_BOTH) fsm_pre_locations=WAIT_FOR_GESTURE;
 	}
 	// ----- END FSM

@@ -19,6 +19,7 @@ time_t start_time1;
 FSM_Locations fsm_locations=lWAIT_FOR_GESTURE;
 Point2f fixed_location;
 int fixed_angle=0;
+FSM_Move fsm_move=mWAIT_FOR_GESTURE;
 
 // ----------Global variables-----------
 //for Scouty Pose and checking if valid data is received.
@@ -38,8 +39,7 @@ void check_laser(const sensor_msgs::LaserScan::ConstPtr& msg) {
 	laser_start_time=ros::Time::now();
 }
 
-void amcl_pose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg)
-{
+void amcl_pose(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg) {
   loc_start_time=ros::Time::now();
   // Convert to pixel space
   double width=msg->pose.pose.position.x/0.05;
@@ -189,7 +189,7 @@ int main(int argc, char** argv) {
 		}
 		else if (fsm_operation_mode==MOVE_LOCATIONS) {
 			// Transition:
-			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_GESTURES;ROS_INFO("MODE:GESTURES"); time_set=0;}}
+			if (gesture==CORNER_RIGHT&&(ros::Time::now().toSec()-switch_time.toSec())>=2) {fsm_operation_mode=MOVE_GESTURES;ROS_INFO("MODE:GESTURES"); time_set=0;}
 			// Send Scouty to arbitrary Locations indicated
 			interface=move_location(n,map,gesture,Status,openni_right_hand,left_hand,ac,goal,sc);
 		}
