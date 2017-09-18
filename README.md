@@ -1,4 +1,4 @@
-# Code for the course "Autonomous Systems" at IST, Lisbon Portugal
+# "Autonomous Systems" at IST, Lisbon, Portugal
 
 ## Team Scout 1
 
